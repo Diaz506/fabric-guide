@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Integration — Microsoft Fabric Guide</title>
+  <meta name="description" content="OneLake shortcuts, Fabric mirroring, Dataflows Gen2, and data pipeline patterns for Microsoft Fabric.">
+  <meta property="og:title" content="Data Integration — Microsoft Fabric Guide">
+  <meta property="og:description" content="OneLake shortcuts, Fabric mirroring, Dataflows Gen2, and data pipeline patterns for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/data-integration">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Data Integration — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="OneLake shortcuts, Fabric mirroring, Dataflows Gen2, and data pipeline patterns for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">Data Engineer</span> <span class="tag tag-purple">Data Architect</span> <span class="tag tag-green">Analytics Engineer</span> — This section covers how to bring data into Fabric using shortcuts, mirroring, Dataflows Gen2, and data pipelines — including when to use each approach.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION: OneLake Shortcuts
+       =============================================== -->
+  <section id="shortcuts" class="section" data-roles="data-engineer,data-architect,analytics-engineer">
+    <div class="section-header">
+      <div class="section-number">Shortcuts</div>
+      <h2>OneLake Shortcuts</h2>
+      <p class="section-subtitle">Zero-copy data virtualization — access data where it lives without moving or duplicating it.</p>
+    </div>
+
+    <h3>What Are Shortcuts?</h3>
+    <p><strong>Shortcuts</strong> are pointers to data in external or internal locations. They appear as folders in your lakehouse but don't copy data — queries read directly from the source. This enables unified data access across clouds, storage accounts, and Fabric workspaces with no ETL overhead.</p>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Key Concept</div>
+      <p>Shortcuts are <strong>metadata-only references</strong>. There is no data movement, no duplication cost, and no sync lag. The data is always read from its original location at query time.</p>
+    </div>
+
+    <h3>Shortcut Types</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Shortcut Type</th><th>Source</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Internal</strong></td><td>Other Fabric lakehouses, warehouses, or KQL databases</td><td>Cross-workspace and cross-domain data sharing within Fabric</td></tr>
+          <tr><td><strong>ADLS Gen2</strong></td><td>Azure Data Lake Storage Gen2 accounts</td><td>Connect to existing Azure data lakes without migration</td></tr>
+          <tr><td><strong>Amazon S3</strong></td><td>AWS S3 buckets</td><td>Multi-cloud analytics — query AWS data from Fabric</td></tr>
+          <tr><td><strong>Google Cloud Storage</strong></td><td>GCS buckets</td><td>Multi-cloud analytics — query GCP data from Fabric</td></tr>
+          <tr><td><strong>Dataverse</strong></td><td>Microsoft Dataverse tables</td><td>Access Dynamics 365 / Power Platform data directly</td></tr>
+          <tr><td><strong>Amazon S3 Compatible</strong></td><td>S3-compatible stores (MinIO, etc.)</td><td>Connect to on-prem or third-party object storage</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Architecture Patterns with Shortcuts</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>🔗 Cross-Domain Data Mesh</h4>
+        <p>Each domain publishes a Gold layer in its own workspace. Other domains consume via shortcuts — no data copies, no pipelines to maintain. The producing domain controls access.</p>
+      </div>
+      <div class="card">
+        <h4>☁️ Multi-Cloud Lakehouse</h4>
+        <p>Create shortcuts to ADLS Gen2, AWS S3, and GCS in a single lakehouse. Run Spark or SQL queries across all sources as if they were local Delta tables.</p>
+      </div>
+      <div class="card">
+        <h4>🏗️ Bronze Layer Virtualization</h4>
+        <p>Instead of copying raw data into Fabric, create shortcuts to existing storage. Only materialize Silver and Gold layers — reducing storage cost and ingestion complexity.</p>
+      </div>
+      <div class="card">
+        <h4>📊 Shared Reference Data</h4>
+        <p>Centralize reference tables (calendars, currencies, region mappings) in one workspace and share via shortcuts to all consumers. Update once, reflect everywhere.</p>
+      </div>
+    </div>
+
+    <h3>Security & Access Control</h3>
+    <ul>
+      <li><strong>Authentication:</strong> Internal shortcuts use Fabric identity. External shortcuts (ADLS, S3, GCS) use connection credentials configured by an admin.</li>
+      <li><strong>Authorization:</strong> Access to the shortcut is governed by workspace permissions. The user must also have access to the underlying data source.</li>
+      <li><strong>Row-Level Security:</strong> RLS defined on the source data applies when queries traverse shortcuts.</li>
+      <li><strong>Governance:</strong> Shortcuts respect Microsoft Purview sensitivity labels and Information Protection policies.</li>
+    </ul>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Important Considerations</div>
+      <p><strong>Performance:</strong> Shortcut queries depend on source latency. For high-frequency analytics, consider materializing critical data instead of using shortcuts. <strong>Delta format</strong> is required for full feature support (time travel, ACID transactions). Non-Delta files (Parquet, CSV) are read-only through shortcuts.</p>
+    </div>
+
+    <h3>Best Practices</h3>
+    <div class="code-block">
+      <div class="code-header"><span>Shortcuts — Do's and Don'ts</span><button class="code-copy-btn">Copy</button></div>
+      <pre>✅ Use shortcuts for read-heavy, cross-domain sharing (Gold layer consumption)
+✅ Use shortcuts to avoid duplicating Bronze data already in ADLS Gen2
+✅ Apply consistent naming: sc_&lt;source&gt;_&lt;dataset&gt; (e.g., sc_sales_orders)
+✅ Document shortcuts in a central catalog — they're invisible in lineage views
+
+⚠️  Monitor source latency — external shortcuts add network round-trip time
+⚠️  Test Direct Lake mode compatibility — not all shortcut types support it
+
+❌ Don't use shortcuts for write-back scenarios — they're read-only
+❌ Don't chain shortcuts (shortcut → shortcut) — performance degrades
+❌ Don't shortcut to volatile/temporary storage locations</pre>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/onelake/onelake-shortcuts" target="_blank">OneLake Shortcuts ↗</a>
+      <a href="https://learn.microsoft.com/fabric/onelake/create-adls-shortcut" target="_blank">Create ADLS Gen2 Shortcut ↗</a>
+      <a href="https://learn.microsoft.com/fabric/onelake/create-s3-shortcut" target="_blank">Create S3 Shortcut ↗</a>
+      <a href="https://learn.microsoft.com/fabric/onelake/create-gcs-shortcut" target="_blank">Create GCS Shortcut ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="data-mesh.html">Data Mesh — Domain Ownership & Data Products →</a>
+      <a href="architecture.html">Architecture — OneLake Concepts →</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION: Fabric Mirroring
+       =============================================== -->
+  <section id="mirroring" class="section" data-roles="data-engineer,data-architect,analytics-engineer">
+    <div class="section-header">
+      <div class="section-number">Mirroring</div>
+      <h2>Fabric Mirroring</h2>
+      <p class="section-subtitle">Near real-time data replication from operational databases into OneLake — no ETL pipelines required.</p>
+    </div>
+
+    <h3>What Is Mirroring?</h3>
+    <p><strong>Mirroring</strong> continuously replicates data from external databases into OneLake as Delta tables using Change Data Capture (CDC). Unlike traditional ETL, mirroring is managed by Fabric — you configure the source, and data flows automatically with near real-time latency.</p>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Key Concept</div>
+      <p>Mirrored data lands in OneLake as <strong>Delta tables</strong>, which means it's immediately queryable via Spark, SQL, KQL, and Power BI Direct Lake — no additional transformation needed for basic analytics.</p>
+    </div>
+
+    <h3>Supported Sources</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Source</th><th>CDC Method</th><th>Typical Latency</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Azure SQL Database</strong></td><td>Change tracking / CDC</td><td>Near real-time (minutes)</td><td>Most common source; full and incremental sync</td></tr>
+          <tr><td><strong>Azure Cosmos DB</strong></td><td>Change feed</td><td>Near real-time</td><td>NoSQL → Delta conversion; analytical workloads on transactional data</td></tr>
+          <tr><td><strong>Snowflake</strong></td><td>Streams & tasks</td><td>Near real-time</td><td>Cross-platform analytics; bring Snowflake data into Fabric ecosystem</td></tr>
+          <tr><td><strong>Azure Database for PostgreSQL</strong></td><td>Logical replication</td><td>Near real-time</td><td>Flexible server required; supports selected tables</td></tr>
+          <tr><td><strong>Azure Database for MySQL</strong></td><td>Binlog replication</td><td>Near real-time</td><td>Flexible server required</td></tr>
+          <tr><td><strong>Azure Databricks</strong></td><td>Unity Catalog integration</td><td>Varies</td><td>Mirror Delta tables from Databricks lakehouse</td></tr>
+          <tr><td><strong>SQL Server (on-prem)</strong></td><td>CDC via on-prem gateway</td><td>Minutes</td><td>Requires on-premises data gateway configuration</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How Mirroring Works</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>1. Initial Snapshot</h4>
+        <p>When mirroring is first enabled, Fabric takes a full snapshot of the selected tables and writes them as Delta tables in OneLake.</p>
+      </div>
+      <div class="card">
+        <h4>2. Incremental Sync</h4>
+        <p>After the snapshot, CDC captures inserts, updates, and deletes from the source and applies them to the Delta tables continuously.</p>
+      </div>
+      <div class="card">
+        <h4>3. Delta Conversion</h4>
+        <p>Source data is automatically converted to Delta format with proper schema mapping. Complex types are flattened where needed.</p>
+      </div>
+      <div class="card">
+        <h4>4. Query Ready</h4>
+        <p>Mirrored Delta tables are instantly available in the SQL analytics endpoint, Spark notebooks, and Power BI Direct Lake reports.</p>
+      </div>
+    </div>
+
+    <h3>Architecture Patterns</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>📊 Operational Reporting</h4>
+        <p>Mirror production databases to Fabric and build Power BI reports with Direct Lake mode — get near real-time dashboards without impacting the transactional system.</p>
+      </div>
+      <div class="card">
+        <h4>🔄 Database Modernization</h4>
+        <p>Use mirroring as the first step in migrating from SQL Server or Snowflake. Data flows into OneLake immediately while you build the target architecture.</p>
+      </div>
+      <div class="card">
+        <h4>🏭 Multi-Source Consolidation</h4>
+        <p>Mirror multiple databases (Azure SQL, Cosmos DB, PostgreSQL) into a single Fabric workspace. Join across sources using the SQL analytics endpoint.</p>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Important Considerations</div>
+      <p><strong>Capacity cost:</strong> Mirroring consumes CU (Capacity Units) for both initial snapshots and ongoing CDC. Monitor usage in the Capacity Metrics app. <strong>Schema changes:</strong> Some schema modifications at the source (e.g., column drops, type changes) may require re-initialization of the mirror. <strong>Latency:</strong> While near real-time, mirroring is not sub-second — for true streaming, use Eventstreams instead.</p>
+    </div>
+
+    <h3>Best Practices</h3>
+    <div class="code-block">
+      <div class="code-header"><span>Mirroring — Do's and Don'ts</span><button class="code-copy-btn">Copy</button></div>
+      <pre>✅ Start with high-value tables — mirror what's needed, not entire databases
+✅ Use the SQL analytics endpoint for ad-hoc queries on mirrored data
+✅ Combine mirroring with medallion architecture: mirror → Bronze, transform → Silver/Gold
+✅ Monitor replication lag in the Fabric portal and set up alerts
+
+⚠️  Plan for initial snapshot time — large tables may take hours on first sync
+⚠️  Test schema evolution scenarios before going to production
+
+❌ Don't use mirroring for sub-second latency requirements — use Eventstreams instead
+❌ Don't mirror tables with frequent schema changes without a re-init plan
+❌ Don't skip capacity planning — continuous CDC consumes CUs 24/7</pre>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/database/mirrored-database/overview" target="_blank">Mirrored Databases Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/database/mirrored-database/azure-sql-database" target="_blank">Mirror Azure SQL Database ↗</a>
+      <a href="https://learn.microsoft.com/fabric/database/mirrored-database/azure-cosmos-db" target="_blank">Mirror Cosmos DB ↗</a>
+      <a href="https://learn.microsoft.com/fabric/database/mirrored-database/snowflake" target="_blank">Mirror Snowflake ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="best-practices.html#realtime">Real-Time Analytics — Streaming Patterns →</a>
+      <a href="capacity-planning.html">Capacity Planning — CU Consumption →</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION: Dataflows Gen2
+       =============================================== -->
+  <section id="dataflows" class="section" data-roles="data-engineer,analytics-engineer,bi-developer">
+    <div class="section-header">
+      <div class="section-number">Dataflows</div>
+      <h2>Dataflows Gen2</h2>
+      <p class="section-subtitle">Low-code data transformation and ingestion powered by Power Query — ideal for citizen integrators and standardized ETL.</p>
+    </div>
+
+    <h3>What Are Dataflows Gen2?</h3>
+    <p><strong>Dataflows Gen2</strong> provide a Power Query-based, low-code interface for connecting to data sources, applying transformations, and loading data into Fabric destinations (lakehouses, warehouses, or KQL databases). They run on a managed Spark backend and support 150+ connectors.</p>
+
+    <h3>Key Capabilities</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>🔌 150+ Connectors</h4>
+        <p>Connect to databases, SaaS apps, files, APIs, and cloud services. Popular connectors: SQL Server, SharePoint, Salesforce, SAP, REST APIs.</p>
+      </div>
+      <div class="card">
+        <h4>🧩 Power Query Transforms</h4>
+        <p>Use the visual Power Query editor for joins, pivots, aggregations, type conversions, conditional columns, and custom M functions.</p>
+      </div>
+      <div class="card">
+        <h4>📦 Multiple Destinations</h4>
+        <p>Load data into Fabric lakehouses, warehouses, or KQL databases. Supports append, replace, and upsert (merge) load modes.</p>
+      </div>
+      <div class="card">
+        <h4>⚡ Staging Lakehouse</h4>
+        <p>Dataflows Gen2 use an auto-provisioned staging lakehouse for intermediate processing — delivering significantly faster performance than Gen1.</p>
+      </div>
+    </div>
+
+    <h3>When to Use Dataflows Gen2</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Scenario</th><th>Recommended?</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>SaaS data ingestion (Salesforce, SAP, SharePoint)</td><td>✅ Yes</td><td>Built-in connectors handle auth, pagination, and schema mapping</td></tr>
+          <tr><td>Simple transformations (filter, rename, type cast)</td><td>✅ Yes</td><td>Low-code Power Query is faster to build and maintain</td></tr>
+          <tr><td>Citizen integrator / business-user ETL</td><td>✅ Yes</td><td>No Spark or SQL skills required — visual drag-and-drop interface</td></tr>
+          <tr><td>Complex multi-step transformations</td><td>⚠️ Consider Notebooks</td><td>Spark notebooks offer more control for complex logic</td></tr>
+          <tr><td>High-volume data (100M+ rows)</td><td>⚠️ Consider Pipelines + Spark</td><td>Dataflows may time out or consume excessive CUs on very large datasets</td></tr>
+          <tr><td>Real-time / streaming data</td><td>❌ Use Eventstreams</td><td>Dataflows are batch-oriented, not designed for streaming</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use Dataflows Gen2 for <strong>Bronze layer ingestion from SaaS sources</strong> and simple transformations. For complex Silver/Gold transformations, use Spark notebooks orchestrated by Data Pipelines.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/data-factory/create-first-dataflow-gen2" target="_blank">Create Your First Dataflow Gen2 ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-factory/dataflows-gen2-overview" target="_blank">Dataflows Gen2 Overview ↗</a>
+      <a href="https://learn.microsoft.com/power-query/connectors/" target="_blank">Power Query Connectors ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="best-practices.html#engineering">Best Practices — Data Engineering →</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION: Data Pipelines
+       =============================================== -->
+  <section id="pipelines" class="section" data-roles="data-engineer,data-architect">
+    <div class="section-header">
+      <div class="section-number">Pipelines</div>
+      <h2>Data Pipelines</h2>
+      <p class="section-subtitle">Orchestration and scheduling for data movement and transformation — the backbone of production data flows.</p>
+    </div>
+
+    <h3>What Are Data Pipelines?</h3>
+    <p><strong>Data Pipelines</strong> in Fabric are the orchestration engine (based on Azure Data Factory) for scheduling and coordinating data movement and transformation activities. They connect all other integration components — triggering Dataflows, Spark notebooks, stored procedures, and copy operations in sequence or parallel.</p>
+
+    <h3>Core Activities</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>📋 Copy Activity</h4>
+        <p>High-performance data movement between 100+ sources and Fabric destinations. Supports full and incremental loads with configurable parallelism.</p>
+      </div>
+      <div class="card">
+        <h4>📓 Notebook Activity</h4>
+        <p>Execute Spark notebooks for complex transformations. Pass parameters, capture outputs, and chain notebooks in sequence.</p>
+      </div>
+      <div class="card">
+        <h4>🔄 Dataflow Activity</h4>
+        <p>Trigger Dataflows Gen2 as a step in a larger pipeline. Combine low-code and code-first transforms in one orchestration.</p>
+      </div>
+      <div class="card">
+        <h4>📦 Stored Procedure</h4>
+        <p>Execute SQL stored procedures in Fabric warehouses for T-SQL transformations and data loading.</p>
+      </div>
+    </div>
+
+    <h3>Orchestration Patterns</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Pattern</th><th>Description</th><th>When to Use</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sequential Pipeline</strong></td><td>Activities run one after another: Copy → Notebook → Stored Procedure</td><td>Standard ETL with dependencies between steps</td></tr>
+          <tr><td><strong>Parallel Fan-Out</strong></td><td>ForEach activity processes multiple tables or partitions in parallel</td><td>Ingesting many tables from the same source simultaneously</td></tr>
+          <tr><td><strong>Master Pipeline</strong></td><td>Parent pipeline calls child pipelines (Invoke Pipeline activity)</td><td>Large-scale orchestration with reusable sub-pipelines</td></tr>
+          <tr><td><strong>Event-Driven</strong></td><td>Pipeline triggered by storage events, schedule, or API call</td><td>React to file arrivals or system events</td></tr>
+          <tr><td><strong>Incremental Load</strong></td><td>Watermark-based or timestamp-driven loads with Lookup + Copy</td><td>Efficient daily/hourly loads from large tables</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use <strong>master/child pipeline patterns</strong> for production workloads. The master pipeline handles error handling and notifications, while child pipelines encapsulate individual domain or table-group logic for reusability.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/data-factory/activity-overview" target="_blank">Pipeline Activities ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-factory/create-first-pipeline-with-sample-data" target="_blank">Create Your First Pipeline ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-factory/pipeline-runs" target="_blank">Monitor Pipeline Runs ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="operations.html#deployment">Operations — CI/CD & Deployment →</a>
+      <a href="best-practices.html#engineering">Best Practices — Spark & Notebooks →</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION: Decision Matrix
+       =============================================== -->
+  <section id="decision-matrix" class="section" data-roles="data-engineer,data-architect,analytics-engineer,bi-developer">
+    <div class="section-header">
+      <div class="section-number">Decide</div>
+      <h2>Integration Decision Matrix</h2>
+      <p class="section-subtitle">Choose the right integration approach based on your data source, latency needs, and team skills.</p>
+    </div>
+
+    <h3>Which Tool Should I Use?</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Criteria</th><th>Shortcuts</th><th>Mirroring</th><th>Dataflows Gen2</th><th>Data Pipelines</th><th>Eventstreams</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Data movement</strong></td><td>None (zero-copy)</td><td>CDC replication</td><td>Batch copy + transform</td><td>Orchestrated copy</td><td>Streaming ingestion</td></tr>
+          <tr><td><strong>Latency</strong></td><td>Real-time (reads at source)</td><td>Near real-time (minutes)</td><td>Batch (minutes–hours)</td><td>Batch (minutes–hours)</td><td>Seconds</td></tr>
+          <tr><td><strong>Transform capability</strong></td><td>None</td><td>None (raw replication)</td><td>Power Query (visual)</td><td>Orchestration only</td><td>Inline transforms</td></tr>
+          <tr><td><strong>Skill level</strong></td><td>Low</td><td>Low</td><td>Low (Power Query)</td><td>Medium (ADF patterns)</td><td>Medium–High</td></tr>
+          <tr><td><strong>Best for</strong></td><td>Cross-domain sharing, multi-cloud</td><td>Database → Lakehouse CDC</td><td>SaaS ingestion, simple ETL</td><td>Production orchestration</td><td>IoT, logs, streaming</td></tr>
+          <tr><td><strong>CU consumption</strong></td><td>At query time only</td><td>Continuous (24/7)</td><td>During execution</td><td>During execution</td><td>Continuous</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Common Combinations</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>🏗️ Full Medallion ETL</h4>
+        <p><strong>Mirroring</strong> (source → Bronze) + <strong>Pipelines</strong> (orchestrate Spark notebooks for Silver/Gold) + <strong>Shortcuts</strong> (share Gold across domains).</p>
+      </div>
+      <div class="card">
+        <h4>☁️ Multi-Cloud Analytics</h4>
+        <p><strong>Shortcuts</strong> to ADLS/S3/GCS for data lake consolidation + <strong>Dataflows Gen2</strong> for SaaS connectors (Salesforce, SAP) + <strong>Pipelines</strong> to schedule refresh.</p>
+      </div>
+      <div class="card">
+        <h4>📊 Real-Time + Historical</h4>
+        <p><strong>Eventstreams</strong> for hot-path streaming into Eventhouse + <strong>Mirroring</strong> for operational databases + <strong>Shortcuts</strong> to join streaming and batch data.</p>
+      </div>
+      <div class="card">
+        <h4>🚀 Quick Start / POC</h4>
+        <p><strong>Mirroring</strong> for instant database access + <strong>Dataflows Gen2</strong> for quick SaaS loads + <strong>Direct Lake</strong> reports on mirrored data — zero Spark code required.</p>
+      </div>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">🎯 Rule of Thumb</div>
+      <p><strong>Don't move data unless you have to.</strong> Start with shortcuts for cross-domain sharing and mirroring for database replication. Add Dataflows Gen2 when you need transformations. Use Data Pipelines when you need production orchestration, scheduling, and error handling.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📎 See Also</h4>
+      <a href="architecture.html#architecture">Architecture — Core Concepts →</a>
+      <a href="best-practices.html#realtime">Real-Time Analytics — Eventstreams →</a>
+      <a href="capacity-planning.html">Capacity Planning — CU Budgeting →</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/nav.js"></script>
+<script>injectNav('data-integration');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

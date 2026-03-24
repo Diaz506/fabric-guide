@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operations — Microsoft Fabric Guide</title>
+  <meta name="description" content="CI/CD deployment patterns, Git integration, and migration strategies for Microsoft Fabric.">
+  <meta property="og:title" content="Operations — Microsoft Fabric Guide">
+  <meta property="og:description" content="CI/CD deployment patterns, Git integration, and migration strategies for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/operations">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Operations — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="CI/CD deployment patterns, Git integration, and migration strategies for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">IT Admin</span> <span class="tag tag-orange">BI Developer</span> <span class="tag tag-purple">Platform Owner</span> — This section covers CI/CD deployment patterns, Git integration, and step-by-step migration strategies from Synapse, ADF, Power BI Premium, and on-premises systems.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION 4: Deployment Patterns
+       =============================================== -->
+  <section id="deployment" class="section" data-roles="data-engineer,it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">DevOps</div>
+      <h2>Deployment Patterns</h2>
+      <p class="section-subtitle">CI/CD, Git integration, and lifecycle management for Fabric artifacts.</p>
+    </div>
+
+    <h3>Development Lifecycle</h3>
+    <p>A well-structured deployment strategy ensures reliability and consistency across environments. Microsoft Fabric supports a full <strong>Dev → Test → Prod</strong> lifecycle with built-in tools.</p>
+
+    <!-- Deployment Pipeline Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">Deployment Pipeline</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">💻</div>
+            <div class="stage-name">Develop</div>
+          </div>
+          <div class="stage-desc">Code, build, and test in dev workspace</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">Git Commit</div>
+          </div>
+          <div class="stage-desc">Push to feature branch, create pull request</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">✅</div>
+            <div class="stage-name">Test / QA</div>
+          </div>
+          <div class="stage-desc">Validate in staging workspace</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🚀</div>
+            <div class="stage-name">Production</div>
+          </div>
+          <div class="stage-desc">Deploy via pipeline to prod workspace</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Fabric Deployment Pipelines</h3>
+    <p>Deployment pipelines are Fabric's built-in tool for managing the lifecycle of your artifacts (lakehouses, warehouses, reports, notebooks). They let you promote artifacts through stages with comparison and selective deployment.</p>
+    <ul>
+      <li><strong>Up to 10 stages</strong> per pipeline (typically Dev → Test → Prod)</li>
+      <li>Compare artifact differences between stages before deploying</li>
+      <li>Deploy specific items or all items at once</li>
+      <li>Configure <strong>deployment rules</strong> to parameterize connections per environment</li>
+      <li>Supports <strong>backward deployment</strong> (e.g., rolling back from Prod to Test)</li>
+    </ul>
+
+    <h3>Git Integration</h3>
+    <p>Fabric supports direct integration with <strong>Azure DevOps</strong> and <strong>GitHub</strong> repositories. This enables version control, code review, and collaboration workflows for Fabric artifacts.</p>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use <strong>Git integration for development</strong> (version control, branching, PRs) and <strong>deployment pipelines for promotion</strong> (Dev → Test → Prod). They complement each other.</p>
+    </div>
+
+    <h4>Git Integration Setup</h4>
+    <ul>
+      <li>Connect workspace to a Git repo (Azure DevOps or GitHub)</li>
+      <li>Each artifact is serialized into JSON/PBIR definitions in the repo</li>
+      <li>Use <strong>feature branches</strong> for development, merge to main via PR</li>
+      <li>Auto-sync: changes in Git can auto-update the workspace (and vice versa)</li>
+    </ul>
+
+    <h3>CI/CD Patterns</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Pattern</th><th>Description</th><th>Recommended For</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pipeline-only</strong></td><td>Use Fabric deployment pipelines exclusively</td><td>Small teams, simpler workflows</td></tr>
+          <tr><td><strong>Git + Pipelines</strong></td><td>Git for source control + pipelines for promotion</td><td>Most teams (recommended)</td></tr>
+          <tr><td><strong>Full CI/CD</strong></td><td>Azure DevOps / GitHub Actions + Fabric REST APIs</td><td>Enterprise teams with strict governance</td></tr>
+          <tr><td><strong>Python CI/CD (fabric-cicd)</strong></td><td>Code-first deployments with Python SDK + CI/CD pipelines</td><td>Teams wanting programmatic, deterministic deployments</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Python CI/CD with <code>fabric-cicd</code></h3>
+    <p>The <strong><a href="https://github.com/microsoft/fabric-cicd" class="ext-link" target="_blank" rel="noopener">fabric-cicd</a></strong> library is Microsoft's open-source Python SDK for automating Fabric workspace deployments. It provides deterministic, code-first deployments that integrate seamlessly with GitHub Actions and Azure DevOps pipelines.</p>
+
+    <h4>Installation</h4>
+    <div class="code-block">
+      <div class="code-header"><span>Install via pip</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>pip install fabric-cicd</pre>
+    </div>
+
+    <h4>Key Capabilities</h4>
+    <ul>
+      <li><strong>Deterministic deployments:</strong> Full, predictable workspace deployments every time — no manual workspace operations needed</li>
+      <li><strong>Source-control integration:</strong> Deploy directly from Git repository directories (GitHub, Azure DevOps) into target workspaces</li>
+      <li><strong>Environment parameterization:</strong> Use <code>parameter.yml</code> files to manage environment-specific values (connection strings, workspace IDs, lakehouse names)</li>
+      <li><strong>Flexible authentication:</strong> Supports all Azure <code>TokenCredential</code> methods — user identity, service principal, and managed identity</li>
+      <li><strong>Supported item types:</strong> Notebooks, Data Pipelines, Semantic Models, Reports, Lakehouses, Environments, and more</li>
+    </ul>
+
+    <h4>Deployment Example</h4>
+    <div class="code-block">
+      <div class="code-header"><span>Python — Deploy Fabric items with fabric-cicd</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>from fabric_cicd import FabricWorkspace, publish_all_items
+from azure.identity import ClientSecretCredential
+
+# Authenticate with service principal
+credential = ClientSecretCredential(
+    tenant_id="your-tenant-id",
+    client_id="your-client-id",
+    client_secret="your-client-secret"
+)
+
+# Define the target workspace
+workspace = FabricWorkspace(
+    workspace_id="your-workspace-id",
+    environment="PROD",                    # Maps to parameter.yml values
+    repository_directory="./fabric-items", # Local repo directory with item definitions
+    item_type_in_scope=["Notebook", "DataPipeline", "SemanticModel", "Report"],
+    credential=credential
+)
+
+# Deploy all items
+publish_all_items(workspace)</pre>
+    </div>
+
+    <h4>GitHub Actions Integration</h4>
+    <div class="code-block">
+      <div class="code-header"><span>YAML — GitHub Actions workflow for Fabric deployment</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>name: Deploy to Fabric
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install fabric-cicd
+        run: pip install fabric-cicd
+
+      - name: Deploy to Production
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        run: python scripts/deploy.py --env PROD</pre>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use <strong>service principals</strong> (not user accounts) for CI/CD automation. Create a dedicated app registration in Entra ID, grant it workspace Contributor access, and store credentials as CI/CD secrets. Use <code>parameter.yml</code> to parameterize environment-specific values so the same codebase deploys to Dev, Test, and Prod.</p>
+    </div>
+
+    <h4>Environment Parameterization</h4>
+    <div class="code-block">
+      <div class="code-header"><span>YAML — parameter.yml example</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>find_replace:
+  - find: "your-dev-lakehouse-id"
+    replace_with:
+      DEV: "dev-lakehouse-id"
+      TEST: "test-lakehouse-id"
+      PROD: "prod-lakehouse-id"
+  - find: "your-dev-connection"
+    replace_with:
+      DEV: "dev-connection-string"
+      TEST: "test-connection-string"
+      PROD: "prod-connection-string"</pre>
+    </div>
+
+    <h3>Environment Separation</h3>
+    <ul>
+      <li>Use <strong>separate workspaces</strong> per environment (ws-dev, ws-test, ws-prod)</li>
+      <li>Use <strong>separate capacities</strong> for production vs. non-production workloads</li>
+      <li>Apply <strong>deployment rules</strong> to swap connection strings per environment</li>
+      <li>Restrict production workspace access to service principals or limited admins</li>
+    </ul>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/cicd/git-integration/intro-to-git-integration" target="_blank">Git Integration ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/deployment-pipelines/intro-to-deployment-pipelines" target="_blank">Deployment Pipelines ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/tutorial-fabric-cicd-local" target="_blank">fabric-cicd Tutorial ↗</a>
+      <a href="https://github.com/microsoft/fabric-cicd" target="_blank">fabric-cicd on GitHub ↗</a>
+      <a href="https://learn.microsoft.com/rest/api/fabric/articles/fabric-ci-cd" target="_blank">Fabric CI/CD REST APIs ↗</a>
+    </div>
+
+  </section>
+
+  <!-- ===============================================
+       SECTION 8: Migration
+       =============================================== -->
+  <section id="migration" class="section" data-roles="data-architect,it-admin,data-engineer">
+    <div class="section-header">
+      <div class="section-number">Migration</div>
+      <h2>Migration Strategies</h2>
+      <p class="section-subtitle">Moving from existing platforms to Microsoft Fabric with minimal risk.</p>
+    </div>
+
+    <h3>Migration Decision Framework</h3>
+    <p>Migration is not one-size-fits-all. Use a phased approach to reduce risk and ensure continuity:</p>
+
+    <!-- Interactive Migration Path Recommender -->
+    <h4>🔄 Interactive Migration Path Recommender</h4>
+    <p>Select your current platform to see a step-by-step tailored migration path to Fabric.</p>
+
+    <div class="migration-flow" id="migration-recommender">
+      <div class="migration-question">
+        <div class="question-text">What are you migrating from?</div>
+        <div class="wizard-options">
+          <div class="wizard-option" data-value="synapse">
+            <span class="option-icon">🔷</span>
+            <div><strong>Azure Synapse Analytics</strong><br><small>Dedicated SQL pools, Spark pools, Synapse pipelines</small></div>
+          </div>
+          <div class="wizard-option" data-value="adf">
+            <span class="option-icon">🔶</span>
+            <div><strong>Azure Data Factory</strong><br><small>ADF pipelines, linked services, data flows</small></div>
+          </div>
+          <div class="wizard-option" data-value="pbi">
+            <span class="option-icon">📊</span>
+            <div><strong>Power BI Premium (P-SKU)</strong><br><small>Existing P1–P5 capacity with reports & datasets</small></div>
+          </div>
+          <div class="wizard-option" data-value="databricks">
+            <span class="option-icon">🧱</span>
+            <div><strong>Databricks</strong><br><small>Spark workspaces, Delta tables, MLflow</small></div>
+          </div>
+          <div class="wizard-option" data-value="onprem">
+            <span class="option-icon">🏢</span>
+            <div><strong>On-Premises (SQL Server / SSIS)</strong><br><small>SQL Server databases, SSIS packages, SSRS reports</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="migration-result" style="display:none;"></div>
+    </div>
+
+    <!-- Migration Flow Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">Phased Migration Approach</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔍</div>
+            <div class="stage-name">Assess</div>
+          </div>
+          <div class="stage-desc">Inventory current workloads, dependencies, costs</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🧪</div>
+            <div class="stage-name">Pilot</div>
+          </div>
+          <div class="stage-desc">Migrate 1-2 non-critical workloads to validate</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔄</div>
+            <div class="stage-name">Migrate</div>
+          </div>
+          <div class="stage-desc">Iteratively move workloads in priority order</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📈</div>
+            <div class="stage-name">Optimize</div>
+          </div>
+          <div class="stage-desc">Tune performance, retire legacy services</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Migration Paths</h3>
+
+    <h4>From Azure Synapse Analytics</h4>
+    <ul>
+      <li><strong>Dedicated SQL Pools → Fabric Warehouse:</strong> Migrate T-SQL scripts and stored procedures. Most T-SQL is compatible; review unsupported features (e.g., some system views)</li>
+      <li><strong>Serverless SQL Pools → Fabric Lakehouse:</strong> Replace OPENROWSET queries with Lakehouse SQL endpoints</li>
+      <li><strong>Synapse Spark → Fabric Notebooks:</strong> PySpark/Scala code largely compatible; update library references and session configs</li>
+      <li>Use <strong>Shortcuts</strong> to connect Fabric to existing ADLS Gen2 storage during transition</li>
+    </ul>
+
+    <h4>From Azure Data Factory (ADF)</h4>
+    <ul>
+      <li>Fabric Data Factory supports most ADF pipeline activities natively</li>
+      <li>Use <strong>copy activity</strong> equivalents and <strong>Dataflows Gen2</strong> for transformation</li>
+      <li>Some connectors may differ — validate your source/sink connectors</li>
+      <li>Consider running <strong>ADF and Fabric in parallel</strong> during migration</li>
+    </ul>
+
+    <h4>From Power BI Premium</h4>
+    <ul>
+      <li>Power BI workspaces can be <strong>reassigned to Fabric capacity</strong> (F64 or higher)</li>
+      <li>Existing datasets, reports, and dashboards continue to work unchanged</li>
+      <li>Migrate import-mode datasets to <strong>Direct Lake</strong> for better performance and cost savings</li>
+      <li>P SKUs map to equivalent F SKUs (P1 ≈ F64, P2 ≈ F128, etc.)</li>
+    </ul>
+
+    <h4>From On-Premises (SQL Server / SSIS)</h4>
+    <ul>
+      <li>Use <strong>Data Factory pipelines</strong> with on-premises data gateway for initial data movement</li>
+      <li>Migrate SSIS packages to <strong>Dataflows Gen2</strong> or <strong>Fabric notebooks</strong></li>
+      <li>Use <strong>Fabric mirroring</strong> to replicate SQL Server databases to OneLake in near real-time</li>
+      <li>Plan for a hybrid phase where on-prem and Fabric run in parallel</li>
+    </ul>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Common Migration Pitfalls</div>
+      <p><strong>1.</strong> Doing a "big bang" migration — always migrate incrementally. <strong>2.</strong> Ignoring data quality issues in the source — clean data before or during migration. <strong>3.</strong> Not testing performance with production-scale data. <strong>4.</strong> Forgetting to migrate security policies and access controls. <strong>5.</strong> Underestimating change management — train your team!</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/enterprise/capacity-planning-plan-deployment" target="_blank">Plan First Deployment ↗</a>
+    </div>
+
+    <div class="info-box tip" style="margin-top: 24px;">
+      <div class="info-box-title">📊 Looking for capacity sizing?</div>
+      <p>Capacity planning, SKU selection, cost optimization, and TCO/ROI calculator have moved to the <a href="capacity-planning.html"><strong>Capacity Planning</strong></a> page.</p>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('operations');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Microsoft Fabric Guide</title>
+  <meta name="description" content="Interactive checklist to track your Microsoft Fabric adoption progress.">
+  <meta property="og:title" content="Getting Started — Microsoft Fabric Guide">
+  <meta property="og:description" content="Interactive checklist to track your Microsoft Fabric adoption progress.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/checklist">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Getting Started — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Interactive checklist to track your Microsoft Fabric adoption progress.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">Everyone</span> — Track your Fabric adoption progress across foundation setup, security, architecture, deployment, and analytics. Progress is saved in your browser.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION 12: Getting Started Checklist
+       =============================================== -->
+  <section id="checklist" class="section">
+    <div class="section-header">
+      <div class="section-number">Getting Started</div>
+      <h2>Getting Started Checklist</h2>
+      <p class="section-subtitle">Track your Fabric adoption progress. Your progress is saved in your browser.</p>
+    </div>
+
+    <div class="checklist-progress">
+      <span class="progress-text">0 of 20 completed (0%)</span>
+      <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+    </div>
+
+    <div class="checklist-export" style="margin: 16px 0 24px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="wizard-btn" id="export-md" title="Download as Markdown" aria-label="Export checklist as Markdown">📋 Export as Markdown</button>
+      <button class="wizard-btn" id="export-pdf" title="Print / Save as PDF" aria-label="Print or save checklist as PDF">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <h3>🏗️ Foundation</h3>
+    <ul class="checklist">
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-trial">
+        <label class="checklist-label" for="chk-trial">Activate a Fabric trial or provision a capacity
+          <small>Start with a free 60-day trial (F64) to evaluate features</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-tenant">
+        <label class="checklist-label" for="chk-tenant">Configure tenant-level Fabric settings
+          <small>Enable/disable Fabric for specific security groups in the admin portal</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-workspaces">
+        <label class="checklist-label" for="chk-workspaces">Create workspace structure (Dev / Test / Prod)
+          <small>Follow naming conventions and assign to appropriate capacity</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-domains">
+        <label class="checklist-label" for="chk-domains">Set up domains and assign workspace ownership
+          <small>Align workspaces to business domains (Finance, Marketing, etc.)</small></label>
+      </li>
+    </ul>
+
+    <h3>🔐 Security &amp; Governance</h3>
+    <ul class="checklist">
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-roles">
+        <label class="checklist-label" for="chk-roles">Configure workspace roles and access
+          <small>Assign Admin, Member, Contributor, and Viewer roles per workspace</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-purview">
+        <label class="checklist-label" for="chk-purview">Enable Microsoft Purview integration
+          <small>Set up data cataloging, lineage tracking, and glossary</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-labels">
+        <label class="checklist-label" for="chk-labels">Apply sensitivity labels to sensitive data
+          <small>Configure MIP labels and auto-labeling policies</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-audit">
+        <label class="checklist-label" for="chk-audit">Enable audit logging
+          <small>Turn on unified audit log in Microsoft 365 compliance center</small></label>
+      </li>
+    </ul>
+
+    <h3>📐 Architecture</h3>
+    <ul class="checklist">
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-medallion">
+        <label class="checklist-label" for="chk-medallion">Design your medallion architecture (Bronze / Silver / Gold)
+          <small>Define layers, naming conventions, and data flow patterns</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-lakehouse">
+        <label class="checklist-label" for="chk-lakehouse">Create lakehouses for each medallion layer
+          <small>e.g., lh_bronze, lh_silver, lh_gold</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-warehouse">
+        <label class="checklist-label" for="chk-warehouse">Decide: Lakehouse vs. Warehouse for Gold layer
+          <small>Choose based on team skills (Spark vs. T-SQL) and consumer needs</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-shortcuts">
+        <label class="checklist-label" for="chk-shortcuts">Set up shortcuts for external data sources
+          <small>Connect to ADLS Gen2, S3, or cross-workspace data without copying</small></label>
+      </li>
+    </ul>
+
+    <h3>🚀 Development &amp; Deployment</h3>
+    <ul class="checklist">
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-git">
+        <label class="checklist-label" for="chk-git">Connect workspaces to Git (Azure DevOps / GitHub)
+          <small>Enable version control and collaboration on Fabric artifacts</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-pipeline">
+        <label class="checklist-label" for="chk-pipeline">Set up deployment pipelines (Dev → Test → Prod)
+          <small>Configure stages and deployment rules for environment-specific settings</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-ingestion">
+        <label class="checklist-label" for="chk-ingestion">Build your first data ingestion pipeline
+          <small>Use Data Factory to load data into Bronze layer lakehouse</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-transform">
+        <label class="checklist-label" for="chk-transform">Create transformation notebooks (Bronze → Silver → Gold)
+          <small>Implement data cleansing, deduplication, and business logic</small></label>
+      </li>
+    </ul>
+
+    <h3>📊 Analytics &amp; Reporting</h3>
+    <ul class="checklist">
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-directlake">
+        <label class="checklist-label" for="chk-directlake">Create a Direct Lake semantic model on Gold layer
+          <small>Connect Power BI to lakehouse/warehouse for optimal performance</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-rls">
+        <label class="checklist-label" for="chk-rls">Implement Row-Level Security on reports
+          <small>Configure RLS roles for multi-tenant or role-based data access</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-metrics">
+        <label class="checklist-label" for="chk-metrics">Install the Capacity Metrics app
+          <small>Monitor CU consumption, identify throttling, and optimize costs</small></label>
+      </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-endorse">
+        <label class="checklist-label" for="chk-endorse">Endorse production artifacts (Certify / Promote)
+          <small>Signal trust and quality for your Gold-layer datasets and reports</small></label>
+      </li>
+    </ul>
+
+    <h3>📚 Additional Resources</h3>
+    <ul>
+      <li><a href="https://learn.microsoft.com/fabric/" class="ext-link" target="_blank" rel="noopener">Microsoft Fabric Documentation</a></li>
+      <li><a href="https://learn.microsoft.com/fabric/get-started/fabric-trial" class="ext-link" target="_blank" rel="noopener">Start a Fabric Free Trial</a></li>
+      <li><a href="https://learn.microsoft.com/training/fabric/" class="ext-link" target="_blank" rel="noopener">Microsoft Learn — Fabric Training Paths</a></li>
+      <li><a href="https://community.fabric.microsoft.com/" class="ext-link" target="_blank" rel="noopener">Microsoft Fabric Community</a></li>
+      <li><a href="https://blog.fabric.microsoft.com/" class="ext-link" target="_blank" rel="noopener">Microsoft Fabric Blog</a></li>
+      <li><a href="https://github.com/microsoft/fabric-samples" class="ext-link" target="_blank" rel="noopener">Fabric Samples on GitHub</a></li>
+    </ul>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/get-started/microsoft-fabric-overview" target="_blank">What is Microsoft Fabric? ↗</a>
+      <a href="https://learn.microsoft.com/fabric/get-started/fabric-trial" target="_blank">Start a Fabric Trial ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="architecture.html">Architecture — Core Concepts →</a>
+      <a href="governance.html">Governance & Security →</a>
+      <a href="operations.html">Operations — CI/CD & Deployment →</a>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('checklist');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

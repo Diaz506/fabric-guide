@@ -1,0 +1,40 @@
+{
+  "routes": [
+    { "route": "/architecture", "rewrite": "/architecture.html" },
+    { "route": "/governance", "rewrite": "/governance.html" },
+    { "route": "/networking", "rewrite": "/networking.html" },
+    { "route": "/best-practices", "rewrite": "/best-practices.html" },
+    { "route": "/operations", "rewrite": "/operations.html" },
+    { "route": "/data-mesh", "rewrite": "/data-mesh.html" },
+    { "route": "/fabric-iq", "rewrite": "/fabric-iq.html" },
+    { "route": "/checklist", "rewrite": "/checklist.html" },
+    { "route": "/useful-links", "rewrite": "/useful-links.html" },
+    { "route": "/roadmap", "redirect": "/useful-links", "statusCode": 301 },
+    { "route": "/scenarios", "rewrite": "/scenarios.html" },
+    { "route": "/whats-new", "rewrite": "/whats-new.html" },
+    { "route": "/capacity-planning", "rewrite": "/capacity-planning.html" },
+    { "route": "/data-integration", "rewrite": "/data-integration.html" },
+    { "route": "/playground", "rewrite": "/playground.html" }
+  ],
+  "navigationFallback": {
+    "rewrite": "/404.html",
+    "exclude": ["/css/*", "/js/*", "*.{css,js,svg,png,jpg,ico,woff,woff2,json}"]
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html",
+      "statusCode": 404
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-XSS-Protection": "1; mode=block",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.monitor.azure.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.allorigins.win https://westus2-2.in.applicationinsights.azure.com https://westus2.livediagnostics.monitor.azure.com"
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  }
+}

@@ -1,0 +1,25 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (if SWA CLI is run locally)
+node_modules/
+package-lock.json
+
+# Environment & secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Temp files
+*.tmp
+*.log

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scenario Templates — Microsoft Fabric Guide</title>
+  <meta name="description" content="Industry-specific architecture blueprints and scenario templates for Microsoft Fabric adoption.">
+  <meta property="og:title" content="Scenario Templates — Microsoft Fabric Guide">
+  <meta property="og:description" content="Industry-specific architecture blueprints and scenario templates for Microsoft Fabric adoption.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/scenarios">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Scenario Templates — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Industry-specific architecture blueprints and scenario templates for Microsoft Fabric adoption.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">Solutions Engineer</span> <span class="tag tag-purple">Data Architect</span> <span class="tag tag-green">IT Admin</span> — Use these industry templates as starting points for Fabric architecture design. Each scenario includes recommended components, data flow, governance model, and SKU sizing.</p>
+  </div>
+
+  <section id="scenarios" class="section">
+    <div class="section-header">
+      <div class="section-number">Templates</div>
+      <h2>Customer Scenario Templates</h2>
+      <p class="section-subtitle">Pre-built architecture blueprints for common industry use cases. Click any scenario to expand the full blueprint.</p>
+    </div>
+
+    <!-- Filter Tags -->
+    <div class="scenario-filter" id="scenario-filter">
+      <button class="scenario-tag active" data-filter="all">All Industries</button>
+      <button class="scenario-tag" data-filter="retail">🛒 Retail</button>
+      <button class="scenario-tag" data-filter="healthcare">🏥 Healthcare</button>
+      <button class="scenario-tag" data-filter="finance">🏦 Finance</button>
+      <button class="scenario-tag" data-filter="manufacturing">🏭 Manufacturing</button>
+      <button class="scenario-tag" data-filter="marketing">📈 Marketing</button>
+      <button class="scenario-tag" data-filter="enterprise">🏢 Enterprise</button>
+    </div>
+
+    <!-- Scenario Cards -->
+    <div class="scenario-grid" id="scenario-cards">
+
+      <!-- 1. Retail Analytics -->
+      <div class="scenario-card" data-industry="retail">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">🛒</span>
+          <div>
+            <h3>Retail Analytics Platform</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-blue">Retail</span>
+              <span class="tag tag-orange">F64+</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>Unified analytics platform for multi-channel retail operations — combining POS transactions, e-commerce data, inventory, and customer behavior into a single Fabric lakehouse for real-time and historical insights.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">Data Factory</span>
+              <span class="scenario-comp">Lakehouse</span>
+              <span class="scenario-comp">Data Warehouse</span>
+              <span class="scenario-comp">Power BI</span>
+              <span class="scenario-comp">Real-Time Intelligence</span>
+              <span class="scenario-comp">Data Activator</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">POS systems, e-commerce, inventory DB, loyalty program, supplier feeds</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Bronze</div>
+                <div class="flow-step-detail">Raw transactions, clickstream events, inventory snapshots (Delta)</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Silver</div>
+                <div class="flow-step-detail">Cleaned orders, deduplicated customers, joined inventory + sales</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Gold</div>
+                <div class="flow-step-detail">Sales metrics, customer 360, demand forecasting, store performance</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Consume</div>
+                <div class="flow-step-detail">Power BI dashboards, real-time inventory alerts, demand predictions</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F64</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F64</span>
+                <span class="sizing-value">Free Power BI viewers for store managers + Spark for daily ETL</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">Move to F128 when >200 concurrent BI viewers or >50 daily Spark jobs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>RLS per region/store:</strong> Store managers see only their location's data</li>
+              <li><strong>Sensitivity labels:</strong> Customer PII (loyalty data) classified as Confidential</li>
+              <li><strong>Workspaces:</strong> [Retail]-[Analytics]-[Dev/Test/Prod] naming convention</li>
+              <li><strong>Domain:</strong> "Retail Operations" with merchandising and supply chain sub-domains</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="architecture.html#medallion" class="journey-link">Medallion Architecture →</a>
+            <a href="best-practices.html#realtime" class="journey-link">Real-Time Analytics →</a>
+            <a href="operations.html#costs" class="journey-link">Capacity Sizing →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Healthcare Data Platform -->
+      <div class="scenario-card" data-industry="healthcare">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">🏥</span>
+          <div>
+            <h3>Healthcare Data Platform</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-purple">Healthcare</span>
+              <span class="tag tag-orange">F64+</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>HIPAA-compliant data mesh architecture for healthcare organizations — separate domains for patient data, clinical operations, and financial analytics with strict access controls and audit trails.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">Data Factory</span>
+              <span class="scenario-comp">Lakehouse</span>
+              <span class="scenario-comp">Data Warehouse</span>
+              <span class="scenario-comp">Power BI</span>
+              <span class="scenario-comp">Microsoft Purview</span>
+              <span class="scenario-comp">Managed Private Endpoints</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">EHR (Epic/Cerner), claims systems, lab results, pharmacy, wearables</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Domains</div>
+                <div class="flow-step-detail">Patient • Clinical • Financial (each with own lakehouse)</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Medallion</div>
+                <div class="flow-step-detail">Bronze→Silver→Gold per domain, PHI de-identified at Silver</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Cross-Domain</div>
+                <div class="flow-step-detail">OneLake shortcuts for population health and quality metrics</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Consume</div>
+                <div class="flow-step-detail">Clinical dashboards, regulatory reports, research datasets</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F64</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F64</span>
+                <span class="sizing-value">Managed VNets for HIPAA + enough CU for multi-domain ETL</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">Move to F128 for real-time patient monitoring or ML workloads</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>HIPAA compliance:</strong> Managed private endpoints, no public internet access to data</li>
+              <li><strong>PHI protection:</strong> Sensitivity labels auto-applied, CLS on SSN/MRN, dynamic masking</li>
+              <li><strong>Audit trail:</strong> Purview lineage from source EHR to report, full access logs</li>
+              <li><strong>Domain isolation:</strong> Patient, Clinical, Financial domains with separate security groups</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="data-mesh.html" class="journey-link">Data Mesh Architecture →</a>
+            <a href="governance.html#security" class="journey-link">Security & Access →</a>
+            <a href="networking.html" class="journey-link">Network Security →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Financial Services Reporting -->
+      <div class="scenario-card" data-industry="finance">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">🏦</span>
+          <div>
+            <h3>Financial Services Reporting</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-green">Finance</span>
+              <span class="tag tag-orange">F128+</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>Enterprise reporting platform for banks and financial institutions — regulatory compliance reports, risk analytics, and real-time trading dashboards with strong audit controls and SOX compliance.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">Data Warehouse</span>
+              <span class="scenario-comp">Lakehouse</span>
+              <span class="scenario-comp">Power BI</span>
+              <span class="scenario-comp">Deployment Pipelines</span>
+              <span class="scenario-comp">Fabric Mirroring</span>
+              <span class="scenario-comp">Microsoft Purview</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">Core banking, trading platforms, risk engines, market data feeds</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Ingest</div>
+                <div class="flow-step-detail">Mirroring for real-time CDC from SQL databases + batch market data</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Transform</div>
+                <div class="flow-step-detail">Bronze→Silver reconciliation, Silver→Gold regulatory aggregations</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Serve</div>
+                <div class="flow-step-detail">Warehouse for regulatory SQL queries + Power BI dashboards</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F128</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F128</span>
+                <span class="sizing-value">Heavy SQL workloads for regulatory queries + concurrent analyst access</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">F256 for intraday risk calculations or >500 report consumers</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>SOX compliance:</strong> Full deployment pipelines (Dev→Test→Prod) with approval gates</li>
+              <li><strong>CLS on sensitive fields:</strong> Account numbers and transaction amounts masked for non-privileged users</li>
+              <li><strong>Private endpoints:</strong> No public access, VNet-integrated for regulatory requirements</li>
+              <li><strong>Immutable audit:</strong> Purview lineage + activity logs retained per regulatory timelines</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="operations.html#deployment" class="journey-link">Deployment Pipelines →</a>
+            <a href="governance.html" class="journey-link">Governance & Security →</a>
+            <a href="networking.html#private-link" class="journey-link">Private Link →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. IoT & Manufacturing -->
+      <div class="scenario-card" data-industry="manufacturing">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">🏭</span>
+          <div>
+            <h3>IoT &amp; Manufacturing Analytics</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-cyan">Manufacturing</span>
+              <span class="tag tag-orange">F32–F64</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>Real-time operational intelligence for manufacturing and IoT — streaming sensor data into Eventhouse for live monitoring, anomaly detection, and predictive maintenance, with historical analysis in Lakehouse.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">Real-Time Intelligence</span>
+              <span class="scenario-comp">Eventhouse</span>
+              <span class="scenario-comp">Data Activator</span>
+              <span class="scenario-comp">Lakehouse</span>
+              <span class="scenario-comp">Spark Notebooks</span>
+              <span class="scenario-comp">Power BI</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">IoT sensors, PLCs, SCADA, MES, ERP (SAP/Oracle)</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Stream</div>
+                <div class="flow-step-detail">Event Hub / IoT Hub → Eventhouse for real-time KQL queries</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Process</div>
+                <div class="flow-step-detail">Real-time anomaly detection + Data Activator alerts on thresholds</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Store</div>
+                <div class="flow-step-detail">Lakehouse for historical time-series, Spark for predictive ML</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Consume</div>
+                <div class="flow-step-detail">Live OEE dashboards, maintenance predictions, production reports</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F32</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F32</span>
+                <span class="sizing-value">Eventhouse ingestion is efficient; F32 handles moderate sensor volumes</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">F64 when ingesting >100K events/sec or adding ML training workloads</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>Device-level access:</strong> Separate workspaces per plant/facility with dedicated security groups</li>
+              <li><strong>Retention policies:</strong> Raw sensor data 90 days in Eventhouse, summarized in Lakehouse long-term</li>
+              <li><strong>OT/IT separation:</strong> Network isolation between OT sensor networks and Fabric analytics</li>
+              <li><strong>Alert governance:</strong> Data Activator rules reviewed quarterly, escalation paths documented</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="best-practices.html#realtime" class="journey-link">Real-Time Analytics →</a>
+            <a href="architecture.html#real-time" class="journey-link">Real-Time Intelligence →</a>
+            <a href="operations.html#costs" class="journey-link">Capacity Management →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Marketing Analytics -->
+      <div class="scenario-card" data-industry="marketing">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">📈</span>
+          <div>
+            <h3>Marketing Analytics — Customer 360</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-red">Marketing</span>
+              <span class="tag tag-orange">F32–F64</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>Unified customer view combining CRM, web analytics, social media, and campaign data — enabling identity resolution, attribution modeling, and personalized marketing with GDPR-compliant data handling.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">Data Factory</span>
+              <span class="scenario-comp">Lakehouse</span>
+              <span class="scenario-comp">Spark Notebooks</span>
+              <span class="scenario-comp">Data Warehouse</span>
+              <span class="scenario-comp">Power BI</span>
+              <span class="scenario-comp">OneLake Shortcuts</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">CRM (Dynamics/Salesforce), GA4, social APIs, email, ad networks</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Bronze</div>
+                <div class="flow-step-detail">Raw events from each channel, API responses, campaign metadata</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Silver</div>
+                <div class="flow-step-detail">Identity resolution (Spark), unified customer profile, consent tracking</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Gold</div>
+                <div class="flow-step-detail">Customer segments, campaign attribution, lifetime value, churn scores</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Consume</div>
+                <div class="flow-step-detail">Campaign dashboards, audience exports, personalization APIs</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F32</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F32</span>
+                <span class="sizing-value">Identity resolution runs as batch Spark job; BI load is moderate</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">F64 when adding real-time personalization or >100M events/month</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>GDPR compliance:</strong> Consent-based processing, right-to-deletion via Spark notebooks</li>
+              <li><strong>PII masking:</strong> CLS hides email/phone from analysts, only aggregated segments visible</li>
+              <li><strong>Data retention:</strong> Raw web events deleted after 13 months per GDPR, aggregates retained longer</li>
+              <li><strong>Cross-team sharing:</strong> Marketing Gold layer shared via shortcuts with Sales domain (read-only)</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="best-practices.html#engineering" class="journey-link">Data Engineering →</a>
+            <a href="governance.html#security" class="journey-link">Security & Compliance →</a>
+            <a href="best-practices.html#powerbi" class="journey-link">Power BI Best Practices →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Enterprise Data Platform -->
+      <div class="scenario-card" data-industry="enterprise">
+        <div class="scenario-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="scenario-icon">🏢</span>
+          <div>
+            <h3>Enterprise Data Platform</h3>
+            <div class="scenario-tags">
+              <span class="tag tag-purple">Enterprise</span>
+              <span class="tag tag-orange">F128+</span>
+            </div>
+          </div>
+          <span class="scenario-chevron">▾</span>
+        </div>
+        <div class="scenario-card-body">
+          <div class="scenario-overview">
+            <p>Full-scale enterprise data platform using data mesh principles — multiple business domains (Finance, HR, Operations, Sales) each owning their data products, with centralized governance and shared Fabric capacity.</p>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🏗️ Architecture Components</h4>
+            <div class="scenario-components">
+              <span class="scenario-comp">All Fabric Workloads</span>
+              <span class="scenario-comp">Fabric Domains</span>
+              <span class="scenario-comp">Deployment Pipelines</span>
+              <span class="scenario-comp">Microsoft Purview</span>
+              <span class="scenario-comp">Managed VNet</span>
+              <span class="scenario-comp">Capacity Metrics App</span>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔄 Data Flow</h4>
+            <div class="scenario-flow">
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Sources</div>
+                <div class="flow-step-detail">SAP, Salesforce, Oracle, SQL Server, APIs, files</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Domain Lakehouses</div>
+                <div class="flow-step-detail">Each domain runs Bronze→Silver→Gold in its own workspace</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Data Products</div>
+                <div class="flow-step-detail">Endorsed Gold datasets published as data products with SLAs</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Cross-Domain</div>
+                <div class="flow-step-detail">Shortcuts + Warehouse views for cross-domain analytics</div>
+              </div>
+              <span class="flow-arrow">→</span>
+              <div class="scenario-flow-step">
+                <div class="flow-step-label">Self-Service</div>
+                <div class="flow-step-detail">Departments build reports from governed data products</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>📐 Recommended Sizing</h4>
+            <div class="scenario-sizing">
+              <div class="sizing-item">
+                <span class="sizing-label">Starting SKU</span>
+                <span class="sizing-value">F128</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Why F128</span>
+                <span class="sizing-value">Multiple concurrent domain workloads + enterprise BI + Spark jobs</span>
+              </div>
+              <div class="sizing-item">
+                <span class="sizing-label">Scale trigger</span>
+                <span class="sizing-value">F256+ when >5 active domains or >1000 BI consumers</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scenario-section">
+            <h4>🔒 Governance Model</h4>
+            <ul>
+              <li><strong>Federated governance:</strong> Central CoE defines standards; domain teams implement within guardrails</li>
+              <li><strong>Deployment pipelines:</strong> All domains use Dev→Test→Prod with branch policies and PR reviews</li>
+              <li><strong>Purview integration:</strong> Automated cataloging, lineage, sensitivity labels across all domains</li>
+              <li><strong>Capacity management:</strong> Separate capacities for Prod vs Dev; Metrics app monitored by CoE</li>
+              <li><strong>Workspace naming:</strong> [Domain]-[Product]-[Env] enforced by policy (e.g., Finance-AR-Prod)</li>
+            </ul>
+          </div>
+
+          <div class="scenario-links">
+            <h4>📚 Related Sections</h4>
+            <a href="data-mesh.html" class="journey-link">Data Mesh Architecture →</a>
+            <a href="governance.html#governance-first-guide" class="journey-link">Governance-First Guide →</a>
+            <a href="operations.html#sizing" class="journey-link">Capacity Sizing →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="info-box tip" style="margin-top: 32px;">
+      <div class="info-box-title">💡 How to Use These Templates</div>
+      <p>These scenarios are <strong>starting points, not rigid blueprints</strong>. Every customer's needs are unique. Use these as conversation starters:</p>
+      <ul style="margin-top:8px;">
+        <li><strong>1.</strong> Identify which scenario is closest to your customer's situation</li>
+        <li><strong>2.</strong> Walk through the architecture components and data flow together</li>
+        <li><strong>3.</strong> Adjust the governance model based on their compliance requirements</li>
+        <li><strong>4.</strong> Use the <a href="operations.html#tco-calculator">TCO Calculator</a> to estimate costs</li>
+        <li><strong>5.</strong> Start with a pilot using the recommended SKU, then iterate</li>
+      </ul>
+    </div>
+
+    <div class="section-links">
+      <h4>📎 See Also</h4>
+      <a href="architecture.html">Architecture — Core Concepts →</a>
+      <a href="best-practices.html">Best Practices →</a>
+      <a href="data-mesh.html">Data Mesh Architecture →</a>
+      <a href="capacity-planning.html">Capacity Planning →</a>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('scenarios');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Governance &amp; Security — Microsoft Fabric Guide</title>
+  <meta name="description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
+  <meta property="og:title" content="Governance &amp; Security — Microsoft Fabric Guide">
+  <meta property="og:description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/governance">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Governance &amp; Security — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">IT Admin</span> <span class="tag tag-purple">Data Architect</span> <span class="tag tag-green">Platform Owner</span> — This section covers data governance frameworks, Microsoft Purview integration, security models, workspace roles, RLS/CLS, and network security in Fabric.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION 5: Governance
+       =============================================== -->
+  <section id="governance" class="section" data-roles="it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Governance</div>
+      <h2>Governance</h2>
+      <p class="section-subtitle">Establishing data governance, cataloging, quality, and trust across your Fabric environment.</p>
+    </div>
+
+    <h3>Governance Framework</h3>
+    <p>Effective governance in Fabric combines <strong>Microsoft Purview</strong> for cataloging and lineage, <strong>endorsement</strong> for trust signals, <strong>sensitivity labels</strong> for data protection, and <strong>organizational policies</strong> for access control.</p>
+
+    <h3>Microsoft Purview Integration</h3>
+    <ul>
+      <li><strong>Data Catalog:</strong> Automatically discovers and catalogs all Fabric artifacts (lakehouses, warehouses, reports)</li>
+      <li><strong>Data Lineage:</strong> Visual, end-to-end lineage from source ingestion through transformation to Power BI reports</li>
+      <li><strong>Data Map:</strong> Browse and search across your entire data estate</li>
+      <li><strong>Glossary:</strong> Define business terms and link them to technical assets</li>
+    </ul>
+
+    <h3>Data Domains &amp; Ownership</h3>
+    <p>Organize your Fabric workspaces into logical <strong>domains</strong> (e.g., Finance, HR, Marketing) to align with business ownership.</p>
+    <ul>
+      <li>Assign a <strong>domain owner</strong> responsible for data quality and access within their domain</li>
+      <li>Use Fabric <strong>domains</strong> feature to tag workspaces by business area</li>
+      <li>Establish a <strong>data stewardship</strong> model — stewards per domain for hands-on governance</li>
+    </ul>
+
+    <h3>Endorsement</h3>
+    <p>Fabric provides two endorsement levels to signal trust in artifacts:</p>
+    <div class="card-grid">
+      <div class="card">
+        <h4><span class="tag tag-blue">Promoted</span></h4>
+        <p>Workspace members can promote artifacts to indicate they're ready for broader use. A lightweight signal that says "this is reliable."</p>
+      </div>
+      <div class="card">
+        <h4><span class="tag tag-green">Certified</span></h4>
+        <p>Only designated reviewers can certify artifacts. This is the highest trust level — it means the artifact meets organizational quality and governance standards.</p>
+      </div>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Establish a <strong>certification process</strong>: define criteria (documentation, testing, data quality checks) that an artifact must pass before being certified. Only Gold-layer datasets and production reports should be certified.</p>
+    </div>
+
+    <h3>Sensitivity Labels</h3>
+    <p>Microsoft Information Protection (MIP) sensitivity labels can be applied to Fabric artifacts to classify and protect data:</p>
+    <ul>
+      <li>Labels flow <strong>downstream automatically</strong> — if a lakehouse is labeled "Confidential," reports built on it inherit the label</li>
+      <li>Labels can enforce <strong>encryption and access restrictions</strong> on exported data</li>
+      <li>Integrates with Microsoft 365 compliance center and DLP policies</li>
+    </ul>
+
+    <h3>Data Quality</h3>
+    <ul>
+      <li>Implement <strong>data quality rules</strong> in notebooks (Great Expectations, custom Spark checks)</li>
+      <li>Use <strong>Delta Lake constraints</strong> (NOT NULL, CHECK) for schema-level enforcement</li>
+      <li>Set up <strong>monitoring and alerting</strong> for data freshness, completeness, and accuracy</li>
+      <li>Create a <strong>data quality dashboard</strong> in Power BI for visibility</li>
+    </ul>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/governance/governance-compliance-overview" target="_blank">Governance & Compliance ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/use-microsoft-purview-hub" target="_blank">Microsoft Purview Hub ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/endorsement-overview" target="_blank">Endorsement ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/information-protection" target="_blank">Information Protection ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/domains" target="_blank">Domains ↗</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION 6: Security
+       =============================================== -->
+  <section id="security" class="section" data-roles="it-admin,data-architect,data-engineer">
+    <div class="section-header">
+      <div class="section-number">Security</div>
+      <h2>Security</h2>
+      <p class="section-subtitle">Securing your data at every layer — from workspace access to row-level permissions.</p>
+    </div>
+
+    <h3>Security Model Overview</h3>
+    <p>Fabric implements a <strong>defense-in-depth</strong> approach with multiple security layers: identity, workspace, item, data, and network.</p>
+
+    <h3>Workspace Roles</h3>
+    <p>Every workspace has four built-in roles that control what users can do:</p>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Role</th><th>Permissions</th><th>Typical Assignment</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Admin</strong></td><td>Full control: manage access, delete workspace, configure settings</td><td>Workspace owners, IT admins</td></tr>
+          <tr><td><strong>Member</strong></td><td>Create, edit, delete artifacts; publish reports; share items</td><td>Data engineers, developers</td></tr>
+          <tr><td><strong>Contributor</strong></td><td>Create and edit artifacts, but cannot share or manage access</td><td>Analysts, junior developers</td></tr>
+          <tr><td><strong>Viewer</strong></td><td>View and interact with artifacts (read-only)</td><td>Business users, stakeholders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Data-Level Security</h3>
+
+    <h4>Row-Level Security (RLS)</h4>
+    <p>RLS restricts data access at the row level based on user identity. Configure RLS in Power BI semantic models or Warehouse T-SQL:</p>
+    <div class="code-block">
+      <div class="code-header"><span>T-SQL — Row-Level Security in Warehouse</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>-- Create a security predicate function
+CREATE FUNCTION dbo.fn_security_predicate(@Region AS nvarchar(50))
+RETURNS TABLE
+WITH SCHEMABINDING
+AS
+RETURN SELECT 1 AS result
+WHERE @Region = USER_NAME()
+   OR USER_NAME() = 'admin@contoso.com';
+
+-- Apply security policy to a table
+CREATE SECURITY POLICY RegionFilter
+ADD FILTER PREDICATE dbo.fn_security_predicate(Region)
+ON dbo.SalesData
+WITH (STATE = ON);</pre>
+    </div>
+
+    <h4>Column-Level Security (CLS)</h4>
+    <p>CLS restricts access to specific columns. Use <code>GRANT</code> and <code>DENY</code> statements on individual columns in Fabric Warehouse:</p>
+    <div class="code-block">
+      <div class="code-header"><span>T-SQL — Column-Level Security</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>-- Deny access to salary column for a specific role
+DENY SELECT ON dbo.Employees(Salary) TO [LimitedAccess];
+
+-- Grant access to only specific columns
+GRANT SELECT ON dbo.Employees(EmployeeId, Name, Department) TO [LimitedAccess];</pre>
+    </div>
+
+    <h4>OneLake Data Access Roles</h4>
+    <p>OneLake data access roles provide <strong>fine-grained access control at the folder level</strong> within a lakehouse. You can restrict users to specific folders or tables without granting access to the entire lakehouse.</p>
+
+    <h3>Network Security</h3>
+    <ul>
+      <li><strong>Private Endpoints:</strong> Connect to Fabric from your private network over Azure Private Link</li>
+      <li><strong>Managed Virtual Networks:</strong> Fabric Spark can run within a managed VNet, ensuring outbound traffic is controlled</li>
+      <li><strong>Trusted workspace access:</strong> Allow specific workspaces to access firewalled storage accounts</li>
+      <li><strong>Conditional Access:</strong> Use Entra ID conditional access policies to control how and from where users access Fabric</li>
+    </ul>
+
+    <div class="info-box danger">
+      <div class="info-box-title">🔒 Security Checklist</div>
+      <p><strong>□</strong> Enable Entra ID Conditional Access &nbsp;|&nbsp; <strong>□</strong> Implement RLS on all customer-facing reports &nbsp;|&nbsp; <strong>□</strong> Use service principals (not user accounts) for automation &nbsp;|&nbsp; <strong>□</strong> Enable audit logs &nbsp;|&nbsp; <strong>□</strong> Apply sensitivity labels &nbsp;|&nbsp; <strong>□</strong> Review workspace access quarterly</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Security Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/fundamentals/roles-workspaces" target="_blank">Workspace Roles ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-warehouse/row-level-security" target="_blank">Row-Level Security ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/security-managed-vnets-fabric-overview" target="_blank">Managed Virtual Networks ↗</a>
+    </div>
+
+  </section>
+
+  <!-- ===============================================
+       SECTION 7: Governance-First Assessment
+       =============================================== -->
+  <section id="governance-first" class="section" data-roles="it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Assessment</div>
+      <h2>Governance-First Assessment</h2>
+      <p class="section-subtitle">Assess your organization's governance maturity across domains, development process, security, and workspace design — then get tailored recommendations grounded in Microsoft's official best practices.</p>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">🎯 How this works</div>
+      <p>Answer 12 questions across 4 categories. You'll receive a <strong>governance maturity score</strong> with per-category breakdowns and actionable recommendations for building a governance-first Fabric environment.</p>
+    </div>
+
+    <div class="quiz-container" id="governance-assessment">
+      <div class="wizard-progress">
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+        <div class="wizard-progress-dot"></div>
+      </div>
+
+      <!-- Category: Domains & Ownership -->
+      <div class="quiz-question">
+        <span class="tag tag-purple" style="margin-bottom:8px;display:inline-block;">Domains &amp; Ownership</span>
+        <h4>1. How are business domains defined in your organization?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="domains"><span class="option-icon">❌</span> No formal domain definitions</div>
+          <div class="quiz-option" data-score="1" data-category="domains"><span class="option-icon">🔶</span> Informally understood, not mapped to Fabric</div>
+          <div class="quiz-option" data-score="3" data-category="domains"><span class="option-icon">✅</span> Clearly defined domains with subdomains and assigned domain admins</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-purple" style="margin-bottom:8px;display:inline-block;">Domains &amp; Ownership</span>
+        <h4>2. Do domain owners have accountability for data quality and access?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="domains"><span class="option-icon">❌</span> No ownership model</div>
+          <div class="quiz-option" data-score="1" data-category="domains"><span class="option-icon">🔶</span> Some ownership, inconsistent enforcement</div>
+          <div class="quiz-option" data-score="3" data-category="domains"><span class="option-icon">✅</span> Each domain has designated owners and data stewards with delegated governance</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-purple" style="margin-bottom:8px;display:inline-block;">Domains &amp; Ownership</span>
+        <h4>3. How do teams discover and request access to data from other domains?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="domains"><span class="option-icon">❌</span> Ad-hoc / email requests</div>
+          <div class="quiz-option" data-score="1" data-category="domains"><span class="option-icon">🔶</span> Shared documentation exists but not governed</div>
+          <div class="quiz-option" data-score="3" data-category="domains"><span class="option-icon">✅</span> Microsoft Purview data catalog with self-service access and endorsement signals</div>
+        </div>
+      </div>
+
+      <!-- Category: Development Process -->
+      <div class="quiz-question">
+        <span class="tag tag-blue" style="margin-bottom:8px;display:inline-block;">Development Process</span>
+        <h4>4. How do you manage changes to Fabric artifacts (notebooks, pipelines, reports)?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="devprocess"><span class="option-icon">❌</span> Direct edits in production</div>
+          <div class="quiz-option" data-score="1" data-category="devprocess"><span class="option-icon">🔶</span> Some Git usage, no branch policies</div>
+          <div class="quiz-option" data-score="3" data-category="devprocess"><span class="option-icon">✅</span> Git-integrated with branch policies, pull requests &amp; code reviews</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-blue" style="margin-bottom:8px;display:inline-block;">Development Process</span>
+        <h4>5. Do you have separate environments (Dev / Test / Prod)?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="devprocess"><span class="option-icon">❌</span> Everything in one workspace</div>
+          <div class="quiz-option" data-score="1" data-category="devprocess"><span class="option-icon">🔶</span> Dev and Prod only, no formal separation</div>
+          <div class="quiz-option" data-score="3" data-category="devprocess"><span class="option-icon">✅</span> Full Dev → Test → Prod workspaces mapped to Fabric deployment pipelines</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-blue" style="margin-bottom:8px;display:inline-block;">Development Process</span>
+        <h4>6. How are deployments promoted across environments?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="devprocess"><span class="option-icon">❌</span> Manual copy/paste between workspaces</div>
+          <div class="quiz-option" data-score="1" data-category="devprocess"><span class="option-icon">🔶</span> Fabric deployment pipelines, manual trigger</div>
+          <div class="quiz-option" data-score="3" data-category="devprocess"><span class="option-icon">✅</span> Automated CI/CD with approval gates and variable libraries for env config</div>
+        </div>
+      </div>
+
+      <!-- Category: Security & Access -->
+      <div class="quiz-question">
+        <span class="tag tag-green" style="margin-bottom:8px;display:inline-block;">Security &amp; Access</span>
+        <h4>7. How are workspace roles assigned?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="security"><span class="option-icon">❌</span> Broad access — most users are Members or Admins</div>
+          <div class="quiz-option" data-score="1" data-category="security"><span class="option-icon">🔶</span> Some role differentiation, assigned to individuals</div>
+          <div class="quiz-option" data-score="3" data-category="security"><span class="option-icon">✅</span> Least-privilege via Entra ID security groups: Viewers by default, elevated only where needed</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-green" style="margin-bottom:8px;display:inline-block;">Security &amp; Access</span>
+        <h4>8. Do you enforce data-level security (RLS, CLS, OneLake roles)?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="security"><span class="option-icon">❌</span> No data-level security</div>
+          <div class="quiz-option" data-score="1" data-category="security"><span class="option-icon">🔶</span> RLS on some reports only</div>
+          <div class="quiz-option" data-score="3" data-category="security"><span class="option-icon">✅</span> Layered: RLS/CLS + OneLake data access roles + dynamic data masking</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-green" style="margin-bottom:8px;display:inline-block;">Security &amp; Access</span>
+        <h4>9. Are sensitivity labels and conditional access configured?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="security"><span class="option-icon">❌</span> No labels or conditional access</div>
+          <div class="quiz-option" data-score="1" data-category="security"><span class="option-icon">🔶</span> Labels defined but not consistently applied</div>
+          <div class="quiz-option" data-score="3" data-category="security"><span class="option-icon">✅</span> Auto-labeling policies with downstream inheritance + Entra conditional access enforced</div>
+        </div>
+      </div>
+
+      <!-- Category: Logical Workspaces -->
+      <div class="quiz-question">
+        <span class="tag tag-orange" style="margin-bottom:8px;display:inline-block;">Logical Workspaces</span>
+        <h4>10. How is your workspace structure organized?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="workspaces"><span class="option-icon">❌</span> No naming convention, organic growth</div>
+          <div class="quiz-option" data-score="1" data-category="workspaces"><span class="option-icon">🔶</span> Some structure, not consistently enforced</div>
+          <div class="quiz-option" data-score="3" data-category="workspaces"><span class="option-icon">✅</span> Standardized naming + domain-aligned + environment-separated (Dev/Test/Prod)</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-orange" style="margin-bottom:8px;display:inline-block;">Logical Workspaces</span>
+        <h4>11. How do you manage capacity assignment for workspaces?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="workspaces"><span class="option-icon">❌</span> All workspaces on shared/trial capacity</div>
+          <div class="quiz-option" data-score="1" data-category="workspaces"><span class="option-icon">🔶</span> Some capacity separation (dev vs prod)</div>
+          <div class="quiz-option" data-score="3" data-category="workspaces"><span class="option-icon">✅</span> Dedicated capacities per domain/tier with monitoring via admin workspace</div>
+        </div>
+      </div>
+      <div class="quiz-question">
+        <span class="tag tag-orange" style="margin-bottom:8px;display:inline-block;">Logical Workspaces</span>
+        <h4>12. Do you use Fabric domains to logically group workspaces?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" data-score="0" data-category="workspaces"><span class="option-icon">❌</span> Not using Fabric domains feature</div>
+          <div class="quiz-option" data-score="1" data-category="workspaces"><span class="option-icon">🔶</span> Domains created but not actively governed</div>
+          <div class="quiz-option" data-score="3" data-category="workspaces"><span class="option-icon">✅</span> Domains + subdomains mapped to business units with delegated policies per domain</div>
+        </div>
+      </div>
+
+      <div class="quiz-result" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION 8: Building a Governance-First Environment
+       =============================================== -->
+  <section id="governance-first-guide" class="section" data-roles="it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Governance Guide</div>
+      <h2>Building a Governance-First Fabric Environment</h2>
+      <p class="section-subtitle">A practical blueprint for designing your Fabric estate with governance, security, and access control from day one — based on official Microsoft best practices.</p>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">💡 Governance-First Principle</div>
+      <p>Don't retrofit governance after deployment. Design your Fabric environment with <strong>domains, security, workspace structure, and development lifecycle</strong> defined upfront. This avoids the costly cycle of organic sprawl → audit failures → forced refactoring.</p>
+    </div>
+
+    <h3>🏛️ Domain Strategy &amp; Ownership</h3>
+    <p>Organize your Fabric estate around business domains — not technical teams or projects. Each domain should have clear ownership and delegated governance authority.</p>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Define Domains &amp; Subdomains</h4>
+        <p>Map domains to major business units (Finance, Sales, HR, Marketing). Use <strong>subdomains</strong> to keep categories manageable (e.g., Sales → Domestic, International). Assign a <strong>domain admin</strong> with delegated control over domain policies.</p>
+      </div>
+      <div class="card">
+        <h4>Data Stewardship Model</h4>
+        <p>Appoint <strong>data stewards</strong> per domain responsible for quality, access requests, and metadata curation. Stewards work with the domain admin but focus on hands-on data governance — ensuring datasets are documented, endorsed, and accurate.</p>
+      </div>
+      <div class="card">
+        <h4>Data Discovery via Purview</h4>
+        <p>Enable <strong>Microsoft Purview</strong> for cataloging, lineage, and glossary. Use <strong>endorsement</strong> (Promoted / Certified) to signal trust. Data consumers should be able to discover, evaluate, and request access to datasets through the catalog — not ad-hoc emails.</p>
+      </div>
+    </div>
+    <div class="section-links">
+      <h4>📚 Official Docs</h4>
+      <a href="https://learn.microsoft.com/fabric/governance/domains" target="_blank">Fabric Domains ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/use-microsoft-purview-hub" target="_blank">Purview Hub ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/endorsement-overview" target="_blank">Endorsement ↗</a>
+    </div>
+
+    <h3>📐 Workspace Topology</h3>
+    <p>Workspaces are both a <strong>security boundary</strong> and an <strong>operational boundary</strong> in Fabric. Design them intentionally before creating any content.</p>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Environment Separation</h4>
+        <p>Create <strong>Dev / Test / Prod</strong> workspaces per domain or data product. Example: <code>Finance-Dev</code>, <code>Finance-Test</code>, <code>Finance-Prod</code>. Never develop directly in production workspaces.</p>
+      </div>
+      <div class="card">
+        <h4>Naming Conventions</h4>
+        <p>Enforce a consistent naming standard: <code>[Domain]-[Product]-[Env]</code>. Examples: <code>Sales-Analytics-Prod</code>, <code>HR-DataLake-Dev</code>. This enables at-a-glance identification and automated governance policies.</p>
+      </div>
+      <div class="card">
+        <h4>Capacity Assignment</h4>
+        <p>Assign workspaces to capacities based on criticality. <strong>Production workloads</strong> on Fabric/Premium capacities for SLA guarantees. <strong>Development/test</strong> on smaller or trial capacities. Monitor utilization via the <strong>admin monitoring workspace</strong>.</p>
+      </div>
+    </div>
+    <div class="section-links">
+      <h4>📚 Official Docs</h4>
+      <a href="https://learn.microsoft.com/azure/cloud-adoption-framework/data/governance-security-baselines-fabric-data-lake-unify-data-platform" target="_blank">CAF Governance Baselines ↗</a>
+      <a href="https://learn.microsoft.com/fabric/fundamentals/roles-workspaces" target="_blank">Workspace Roles ↗</a>
+    </div>
+
+    <h3>🔐 Security Layering</h3>
+    <p>Fabric implements <strong>defense-in-depth</strong> with five security layers. A governance-first environment configures all layers before exposing data to users.</p>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Layer</th><th>Mechanism</th><th>Governance-First Action</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1. Identity</strong></td><td>Entra ID, Conditional Access</td><td>Enforce MFA, restrict access by location/device via conditional access policies</td></tr>
+          <tr><td><strong>2. Workspace</strong></td><td>Workspace Roles (Admin/Member/Contributor/Viewer)</td><td>Assign via <strong>Entra ID security groups</strong>, default to Viewer, elevate only with justification</td></tr>
+          <tr><td><strong>3. Item</strong></td><td>Item-level permissions, sharing</td><td>Grant per-item read/reshare only for cross-domain sharing scenarios</td></tr>
+          <tr><td><strong>4. Data</strong></td><td>RLS, CLS, OneLake data access roles, dynamic data masking</td><td>Configure <strong>OneLake folder-level roles</strong> for lakehouse data; layer RLS/CLS on warehouses and semantic models; mask PII columns</td></tr>
+          <tr><td><strong>5. Network</strong></td><td>Private endpoints, managed VNets, trusted workspace access</td><td>Enable private endpoints for sensitive workloads; use managed VNets for Spark outbound traffic control</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box danger">
+      <div class="info-box-title">🔒 Day-One Security Checklist</div>
+      <p><strong>□</strong> Enable Entra Conditional Access &nbsp;|&nbsp; <strong>□</strong> Create security groups per workspace role &nbsp;|&nbsp; <strong>□</strong> Configure OneLake data access roles &nbsp;|&nbsp; <strong>□</strong> Apply sensitivity labels with auto-labeling &nbsp;|&nbsp; <strong>□</strong> Enable audit logs &nbsp;|&nbsp; <strong>□</strong> Set up quarterly access reviews</p>
+    </div>
+    <div class="section-links">
+      <h4>📚 Official Docs</h4>
+      <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Security Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/onelake/security/data-access-control-model" target="_blank">OneLake Data Access Roles ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/permission-model" target="_blank">Permission Model ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/secure-your-data" target="_blank">Secure Your Data ↗</a>
+    </div>
+
+    <h3>🚀 Development Lifecycle</h3>
+    <p>A governed development lifecycle ensures changes are tracked, reviewed, tested, and promoted safely — not edited directly in production.</p>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Git Integration</h4>
+        <p>Connect all workspaces to <strong>Azure DevOps or GitHub</strong> repositories. Use <strong>branch policies</strong> requiring pull requests and at least one reviewer. Map branches to environments: <code>feature/*</code> → Dev, <code>main</code> → Prod.</p>
+      </div>
+      <div class="card">
+        <h4>Deployment Pipelines</h4>
+        <p>Use Fabric's native <strong>deployment pipelines</strong> to promote artifacts across Dev → Test → Prod stages. Configure <strong>approval gates</strong> so production deployments require sign-off from domain owners or data stewards.</p>
+      </div>
+      <div class="card">
+        <h4>Environment Configuration</h4>
+        <p>Use <strong>variable libraries</strong> to manage environment-specific settings (connection strings, capacity, parameters) without manual changes. Automate deployment orchestration via <strong>GitHub Actions or Azure Pipelines</strong>.</p>
+      </div>
+    </div>
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Git-Centric vs Pipeline-Centric</div>
+      <p>Microsoft offers two CI/CD patterns: <strong>Git-centric</strong> (each environment maps to a branch; deploy by merging) and <strong>Pipeline-centric</strong> (single branch linked to Dev; deploy via Fabric deployment pipelines). Choose based on your team's maturity. Pipeline-centric is simpler to start; Git-centric offers more flexibility for large teams.</p>
+    </div>
+    <div class="section-links">
+      <h4>📚 Official Docs</h4>
+      <a href="https://learn.microsoft.com/fabric/cicd/cicd-overview" target="_blank">CI/CD Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/manage-deployment" target="_blank">CI/CD Workflow Options ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/deployment-pipelines/intro-to-deployment-pipelines" target="_blank">Deployment Pipelines ↗</a>
+    </div>
+
+    <div class="section-links">
+      <h4>📎 See Also</h4>
+      <a href="networking.html">Networking Security →</a>
+      <a href="checklist.html">Getting Started Checklist →</a>
+    </div>
+
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('governance');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

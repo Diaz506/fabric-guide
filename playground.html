@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Playground — Microsoft Fabric Guide</title>
+  <meta name="description" content="Interactive drag-and-drop architecture design canvas for Microsoft Fabric — create diagrams with official Fabric components and export as SVG or PNG.">
+  <meta property="og:title" content="Architecture Playground — Microsoft Fabric Guide">
+  <meta property="og:description" content="Interactive drag-and-drop architecture design canvas for Microsoft Fabric — create diagrams with official Fabric components and export as SVG or PNG.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/playground">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Architecture Playground — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Interactive drag-and-drop architecture design canvas for Microsoft Fabric — create diagrams with official Fabric components and export as SVG or PNG.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content playground-page">
+
+  <!-- Toolbar -->
+  <div class="pg-toolbar">
+    <div class="pg-toolbar-left">
+      <span class="pg-toolbar-title">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Architecture Playground
+      </span>
+    </div>
+    <div class="pg-toolbar-center">
+      <button class="pg-btn" id="pg-undo" title="Undo (Ctrl+Z)" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        <span>Undo</span>
+      </button>
+      <button class="pg-btn" id="pg-redo" title="Redo (Ctrl+Y)" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>
+        <span>Redo</span>
+      </button>
+      <div class="pg-toolbar-sep"></div>
+      <button class="pg-btn" id="pg-zoom-in" title="Zoom In">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <span>Zoom In</span>
+      </button>
+      <span class="pg-zoom-label" id="pg-zoom-label">100%</span>
+      <button class="pg-btn" id="pg-zoom-out" title="Zoom Out">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <span>Zoom Out</span>
+      </button>
+      <button class="pg-btn" id="pg-zoom-fit" title="Fit to View">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+        <span>Fit</span>
+      </button>
+      <button class="pg-btn" id="pg-snap" title="Snap to Grid">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+        <span>Snap</span>
+      </button>
+      <div class="pg-toolbar-sep"></div>
+      <button class="pg-btn" id="pg-clear" title="Clear Canvas">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <span>Clear</span>
+      </button>
+      <button class="pg-btn" id="pg-validate" title="Validate Architecture">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        <span>Validate</span>
+      </button>
+      <div class="pg-toolbar-sep"></div>
+      <div class="pg-templates-wrap" id="pg-templates-wrap">
+        <button class="pg-btn" id="pg-templates" title="Load Template">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <span>Templates</span>
+        </button>
+        <div class="pg-templates-dropdown" id="pg-templates-dropdown" style="display:none">
+          <div class="pg-templates-title">Load Template</div>
+          <button class="pg-template-item" data-template="medallion">
+            <strong>Medallion Lakehouse</strong>
+            <small>Bronze → Silver → Gold pattern with Data Factory ingestion</small>
+          </button>
+          <button class="pg-template-item" data-template="realtime">
+            <strong>Real-Time Pipeline</strong>
+            <small>Eventstream with Eventhouse, KQL, and real-time dashboard</small>
+          </button>
+          <button class="pg-template-item" data-template="datamesh">
+            <strong>Data Mesh</strong>
+            <small>Domain-oriented architecture with shared governance layer</small>
+          </button>
+          <button class="pg-template-item" data-template="enterprise">
+            <strong>Enterprise Analytics</strong>
+            <small>Multi-source ingestion to Lakehouse, Warehouse, and Power BI</small>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="pg-toolbar-right">
+      <button class="pg-btn" id="pg-import-json" title="Import JSON">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Import</span>
+      </button>
+      <button class="pg-btn" id="pg-export-json" title="Save as JSON">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>JSON</span>
+      </button>
+      <div class="pg-toolbar-sep"></div>
+      <button class="pg-btn pg-btn-accent" id="pg-export-svg" title="Export as SVG">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>SVG</span>
+      </button>
+      <button class="pg-btn pg-btn-accent" id="pg-export-png" title="Export as PNG">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>PNG</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Canvas Area -->
+  <div class="pg-workspace">
+    <!-- Left Palette Sidebar -->
+    <aside class="pg-palette" id="pg-palette">
+      <div class="pg-palette-tabs">
+        <button class="pg-tab active" data-tab="fabric">Fabric</button>
+        <button class="pg-tab" data-tab="external">External</button>
+        <button class="pg-tab" data-tab="shapes">Shapes</button>
+      </div>
+      <div class="pg-palette-search">
+        <input type="text" id="pg-search" placeholder="Search components…" autocomplete="off" />
+      </div>
+      <div class="pg-palette-list" id="pg-palette-list">
+        <!-- Populated by JS -->
+      </div>
+      <div class="pg-palette-help">
+        <small>Drag or double-click to add to canvas</small>
+      </div>
+    </aside>
+
+    <!-- SVG Canvas -->
+    <div class="pg-canvas-wrapper" id="pg-canvas-wrapper">
+      <svg id="pg-canvas" class="pg-canvas" xmlns="http://www.w3.org/2000/svg">
+        <defs id="pg-defs">
+          <!-- Arrow marker for connections -->
+          <marker id="pg-arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
+            <polygon points="0 0, 10 3.5, 0 7" fill="var(--pg-conn-color, #0078D4)" />
+          </marker>
+          <marker id="pg-arrow-selected" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c" />
+          </marker>
+          <!-- Grid pattern -->
+          <pattern id="pg-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.8" fill="var(--pg-grid-dot, #c8c8c8)" />
+          </pattern>
+        </defs>
+        <!-- Grid background -->
+        <rect id="pg-grid-bg" x="-5000" y="-5000" width="10000" height="10000" fill="url(#pg-grid)" />
+        <!-- Groups layer (behind connections) -->
+        <g id="pg-groups-layer"></g>
+        <!-- Components and connections layer -->
+        <g id="pg-connections-layer"></g>
+        <g id="pg-components-layer"></g>
+        <!-- Alignment guides layer (not exported) -->
+        <g id="pg-guides-layer"></g>
+        <!-- Temp connection line while drawing -->
+        <line id="pg-temp-conn" class="pg-temp-conn" x1="0" y1="0" x2="0" y2="0" style="display:none" />
+        <!-- Selection rectangle -->
+        <rect id="pg-select-rect" class="pg-select-rect" x="0" y="0" width="0" height="0" style="display:none" />
+      </svg>
+      <!-- Selection info tooltip -->
+      <div class="pg-tooltip" id="pg-tooltip" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Hidden file input for JSON import -->
+  <input type="file" id="pg-import-file" accept=".json" style="display:none" />
+
+  <!-- Properties Panel (shown when component/connection selected) -->
+  <div class="pg-properties" id="pg-properties" style="display:none">
+    <div class="pg-properties-header">
+      <span id="pg-properties-title">Properties</span>
+      <button class="pg-properties-close" id="pg-properties-close">&times;</button>
+    </div>
+    <div class="pg-properties-body" id="pg-properties-body">
+      <div id="pg-props-component">
+        <label>Label
+          <input type="text" id="pg-prop-label" class="pg-prop-input" />
+        </label>
+        <label>Notes
+          <textarea id="pg-prop-notes" class="pg-prop-input" rows="3"></textarea>
+        </label>
+        <label id="pg-prop-color-wrap" style="display:none">Color
+          <input type="color" id="pg-prop-color" class="pg-prop-input pg-prop-color" />
+        </label>
+        <label id="pg-prop-fontsize-wrap" style="display:none">Font Size
+          <select id="pg-prop-fontsize" class="pg-prop-input">
+            <option value="12">12px</option>
+            <option value="14" selected>14px</option>
+            <option value="16">16px</option>
+            <option value="20">20px</option>
+            <option value="24">24px</option>
+          </select>
+        </label>
+        <button class="pg-btn pg-btn-danger" id="pg-prop-delete">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          Delete
+        </button>
+      </div>
+      <div id="pg-props-connection" style="display:none">
+        <label>Label
+          <input type="text" id="pg-prop-conn-label" class="pg-prop-input" placeholder="Connection label…" />
+        </label>
+        <label>Style
+          <select id="pg-prop-conn-style" class="pg-prop-select">
+            <option value="curved">Curved</option>
+            <option value="straight">Straight</option>
+            <option value="elbow">Elbow</option>
+          </select>
+        </label>
+        <button class="pg-btn pg-btn-danger" id="pg-prop-conn-delete">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          Delete Connection
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/nav.js"></script>
+<script>injectNav('playground');</script>
+<script src="js/main.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

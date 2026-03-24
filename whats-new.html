@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's New — Microsoft Fabric Guide</title>
+  <meta name="description" content="Latest Microsoft Fabric blog updates, categorized by workload — Power BI, Data Engineering, Real-Time Intelligence, Fabric IQ, and more.">
+  <meta property="og:title" content="What's New — Microsoft Fabric Guide">
+  <meta property="og:description" content="Latest Microsoft Fabric blog updates, categorized by workload — Power BI, Data Engineering, Real-Time Intelligence, Fabric IQ, and more.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/whats-new">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="What's New — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Latest Microsoft Fabric blog updates, categorized by workload — Power BI, Data Engineering, Real-Time Intelligence, Fabric IQ, and more.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">All Roles</span> — Stay up to date with the latest Microsoft Fabric announcements, feature releases, and blog posts across all workloads.</p>
+  </div>
+
+  <section id="whats-new" class="section">
+    <div class="section-header">
+      <div class="section-number">Updates</div>
+      <h2>What's New</h2>
+      <p class="section-subtitle">Latest Microsoft Fabric blog posts, automatically categorized by workload — powered by the official Fabric blog RSS feed.</p>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="whatsnew-filters">
+      <input type="text" id="wn-search" class="whatsnew-search" placeholder="Search posts…" autocomplete="off" />
+      <select id="wn-category" class="whatsnew-select">
+        <option value="">All Workloads</option>
+      </select>
+      <span id="wn-count" class="whatsnew-count"></span>
+    </div>
+
+    <!-- Loading -->
+    <div id="wn-loading" class="whatsnew-loading" style="display:none;">
+      <div class="whatsnew-spinner"></div>
+      <p>Loading latest posts…</p>
+    </div>
+
+    <!-- Error -->
+    <div id="wn-error" class="whatsnew-empty" style="display:none;">
+      Unable to load blog posts. Please try again later.
+    </div>
+
+    <!-- Empty -->
+    <div id="wn-empty" class="whatsnew-empty" style="display:none;">
+      No posts found matching your filters.
+    </div>
+
+    <!-- Results -->
+    <div id="wn-results" class="whatsnew-results"></div>
+
+    <!-- Last Updated -->
+    <div id="wn-footer" class="whatsnew-footer" style="display:none;">
+      <span id="wn-updated"></span>
+      <a href="https://blog.fabric.microsoft.com" target="_blank" rel="noopener">Visit Fabric Blog ↗</a>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('whats-new');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+<script>
+(function() {
+  var RSS_URL = 'https://blog.fabric.microsoft.com/en-US/blog/feed/';
+  var PROXY = 'https://api.allorigins.win/raw?url=';
+  var STORAGE_KEY = 'fabric-whatsnew-posts';
+  var MAX_POSTS = 50;
+
+  var searchInput = document.getElementById('wn-search');
+  var categorySelect = document.getElementById('wn-category');
+  var countEl = document.getElementById('wn-count');
+  var loadingEl = document.getElementById('wn-loading');
+  var errorEl = document.getElementById('wn-error');
+  var emptyEl = document.getElementById('wn-empty');
+  var resultsEl = document.getElementById('wn-results');
+  var footerEl = document.getElementById('wn-footer');
+  var updatedEl = document.getElementById('wn-updated');
+
+  var allPosts = [];
+  var debounceTimer = null;
+
+  // ── Workload categories ───────────────────────────────────────────
+  var categories = [
+    { name: 'Power BI',               color: 'tag-orange',  kw: ['power bi','direct lake','dax','paginated report','dashboard','pbix','visual calculation'] },
+    { name: 'Data Engineering',        color: 'tag-green',   kw: ['lakehouse','spark','notebook','delta lake','v-order','data engineering'] },
+    { name: 'Data Factory',            color: 'tag-blue',    kw: ['pipeline','dataflow','data factory','data integration','copy activity'] },
+    { name: 'Data Warehouse',          color: 'tag-cyan',    kw: ['warehouse','sql endpoint','sql analytics','data warehouse','t-sql'] },
+    { name: 'Real-Time Intelligence',  color: 'tag-red',     kw: ['eventhouse','kql','kusto','event stream','real-time intelligence','real-time hub'] },
+    { name: 'Data Science',            color: 'tag-purple',  kw: ['machine learning','ml model','experiment','data science'] },
+    { name: 'Fabric IQ',              color: 'tag-purple',  kw: ['fabric iq','ontology','data agent','operations agent','semantic intelligence'] },
+    { name: 'OneLake',                color: 'tag-green',   kw: ['onelake','shortcut','mirroring'] },
+    { name: 'Governance & Security',   color: 'tag-red',     kw: ['purview','sensitivity label','rls','cls','security','governance','compliance','dlp','data protection'] },
+    { name: 'Administration',          color: 'tag-orange',  kw: ['capacity','sku','admin portal','tenant setting'] },
+    { name: 'Developer Experience',    color: 'tag-blue',    kw: ['git','ci/cd','cicd','deployment pipeline','rest api','sdk','cli','developer','devops','export','import'] }
+  ];
+
+  function categorize(title, desc) {
+    var text = (title + ' ' + desc).toLowerCase();
+    var best = { name: 'Platform', color: 'tag-cyan' };
+    var bestScore = 0;
+    for (var i = 0; i < categories.length; i++) {
+      var score = 0;
+      for (var j = 0; j < categories[i].kw.length; j++) {
+        if (text.indexOf(categories[i].kw[j]) !== -1) {
+          score += title.toLowerCase().indexOf(categories[i].kw[j]) !== -1 ? 2 : 1;
+        }
+      }
+      if (score > bestScore) { bestScore = score; best = categories[i]; }
+    }
+    return { category: best.name, categoryColor: best.color };
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    var days = Math.floor((Date.now() - d) / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return days + ' days ago';
+    if (days < 30) { var w = Math.floor(days / 7); return w + ' week' + (w > 1 ? 's' : '') + ' ago'; }
+    return formatDate(dateStr);
+  }
+
+  function truncate(text, max) {
+    if (!text || text.length <= max) return text || '';
+    return text.substring(0, max) + '…';
+  }
+
+  function stripHtml(html) {
+    if (!html) return '';
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+  }
+
+  // ── LocalStorage persistence ──────────────────────────────────────
+  function loadPersistedPosts() {
+    try {
+      var data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) { return []; }
+  }
+
+  function persistPosts(posts) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts.slice(0, MAX_POSTS)));
+    } catch (e) { /* quota exceeded */ }
+  }
+
+  function mergePosts(fresh, stored) {
+    var seen = {};
+    var merged = [];
+    var all = fresh.concat(stored);
+    for (var i = 0; i < all.length; i++) {
+      if (!seen[all[i].guid]) {
+        seen[all[i].guid] = true;
+        merged.push(all[i]);
+      }
+    }
+    merged.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+    return merged.slice(0, MAX_POSTS);
+  }
+
+  // ── Parse RSS XML ─────────────────────────────────────────────────
+  function parseRss(xmlText) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(xmlText, 'text/xml');
+    var items = doc.querySelectorAll('item');
+    var posts = [];
+    items.forEach(function(item) {
+      var title = (item.querySelector('title') || {}).textContent || '';
+      var desc = stripHtml((item.querySelector('description') || {}).textContent || '');
+      var link = (item.querySelector('link') || {}).textContent || '';
+      var pubDate = (item.querySelector('pubDate') || {}).textContent || '';
+      var guidEl = item.querySelector('guid');
+      var guid = guidEl ? guidEl.textContent : link;
+      var cat = categorize(title, desc);
+      posts.push({
+        guid: guid, title: title, description: desc,
+        link: link, date: pubDate,
+        category: cat.category, categoryColor: cat.categoryColor
+      });
+    });
+    return posts;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────
+  function renderCard(post) {
+    return '<a href="' + escapeHtml(post.link) + '" class="whatsnew-card" target="_blank" rel="noopener">' +
+      '<div class="whatsnew-card-top">' +
+        '<span class="tag ' + escapeHtml(post.categoryColor) + '">' + escapeHtml(post.category) + '</span>' +
+        '<span class="whatsnew-card-date">' + timeAgo(post.date) + '</span>' +
+      '</div>' +
+      '<div class="whatsnew-card-title">' + escapeHtml(post.title) + '</div>' +
+      '<div class="whatsnew-card-desc">' + escapeHtml(truncate(post.description, 180)) + '</div>' +
+      '<span class="whatsnew-card-link">Read on Fabric Blog ↗</span>' +
+    '</a>';
+  }
+
+  function applyFilters() {
+    var query = searchInput.value.trim().toLowerCase();
+    var cat = categorySelect.value;
+    var filtered = allPosts.filter(function(p) {
+      if (cat && p.category !== cat) return false;
+      if (query && (p.title + ' ' + p.description + ' ' + p.category).toLowerCase().indexOf(query) === -1) return false;
+      return true;
+    });
+    emptyEl.style.display = filtered.length === 0 ? 'block' : 'none';
+    countEl.textContent = filtered.length + ' post' + (filtered.length !== 1 ? 's' : '');
+    resultsEl.innerHTML = filtered.map(renderCard).join('');
+  }
+
+  function populateCategories(posts) {
+    var cats = {};
+    posts.forEach(function(p) { cats[p.category] = true; });
+    Object.keys(cats).sort().forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      categorySelect.appendChild(opt);
+    });
+  }
+
+  // ── Load ──────────────────────────────────────────────────────────
+  async function loadPosts() {
+    loadingEl.style.display = 'flex';
+    errorEl.style.display = 'none';
+    emptyEl.style.display = 'none';
+    resultsEl.innerHTML = '';
+    footerEl.style.display = 'none';
+
+    var stored = loadPersistedPosts();
+
+    try {
+      var resp = await fetch(PROXY + encodeURIComponent(RSS_URL));
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var xml = await resp.text();
+      var fresh = parseRss(xml);
+      allPosts = mergePosts(fresh, stored);
+      persistPosts(allPosts);
+    } catch (e) {
+      console.error('RSS fetch failed, using cached posts:', e);
+      allPosts = stored;
+    }
+
+    loadingEl.style.display = 'none';
+
+    if (allPosts.length === 0) {
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    populateCategories(allPosts);
+    applyFilters();
+    footerEl.style.display = 'flex';
+    updatedEl.textContent = 'Showing ' + allPosts.length + ' posts';
+  }
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyFilters, 250);
+  });
+  categorySelect.addEventListener('change', applyFilters);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPosts);
+  } else {
+    loadPosts();
+  }
+})();
+</script>
+</body>
+</html>

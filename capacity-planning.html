@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capacity Planning — Microsoft Fabric Guide</title>
+  <meta name="description" content="Capacity sizing, SKU selection, cost optimization, and TCO/ROI calculator for Microsoft Fabric.">
+  <meta property="og:title" content="Capacity Planning — Microsoft Fabric Guide">
+  <meta property="og:description" content="Capacity sizing, SKU selection, cost optimization, and TCO/ROI calculator for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/capacity-planning">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Capacity Planning — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Capacity sizing, SKU selection, cost optimization, and TCO/ROI calculator for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">IT Admin</span> <span class="tag tag-orange">Business Leader</span> <span class="tag tag-purple">Data Architect</span> — This section covers capacity SKU selection, cost optimization strategies, CU smoothing and throttling, capacity sizing for new workloads and migrations, and a TCO/ROI calculator.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION 7: Capacity & Costs
+       =============================================== -->
+  <section id="costs" class="section" data-roles="it-admin,business-leader,data-architect">
+    <div class="section-header">
+      <div class="section-number">Capacity</div>
+      <h2>Capacity &amp; Cost Management</h2>
+      <p class="section-subtitle">Understanding Fabric's capacity model and optimizing your spend.</p>
+    </div>
+
+    <h3>Capacity Units (CUs)</h3>
+    <p>Microsoft Fabric uses a <strong>universal compute unit</strong> called a Capacity Unit (CU). All workloads — Spark, SQL, Power BI, Data Factory — consume from the same CU pool. This simplifies capacity planning compared to provisioning separate services.</p>
+
+    <h3>SKU Options</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>SKU</th><th>Capacity Units</th><th>Use Case</th><th>Pay-As-You-Go / month*</th><th>1-Year Reservation / month*</th><th>Savings</th></tr></thead>
+        <tbody>
+          <tr><td><strong>F2</strong></td><td>2 CUs</td><td>POC / Learning</td><td>~$262</td><td>~$156</td><td>~40%</td></tr>
+          <tr><td><strong>F4</strong></td><td>4 CUs</td><td>Small team dev</td><td>~$525</td><td>~$313</td><td>~40%</td></tr>
+          <tr><td><strong>F8</strong></td><td>8 CUs</td><td>Small production</td><td>~$1,050</td><td>~$625</td><td>~40%</td></tr>
+          <tr><td><strong>F16</strong></td><td>16 CUs</td><td>Medium workloads</td><td>~$2,100</td><td>~$1,251</td><td>~40%</td></tr>
+          <tr><td><strong>F32</strong></td><td>32 CUs</td><td>Department-level</td><td>~$4,200</td><td>~$2,501</td><td>~40%</td></tr>
+          <tr><td><strong>F64</strong></td><td>64 CUs</td><td>Large workloads</td><td>~$8,400</td><td>~$5,003</td><td>~40%</td></tr>
+          <tr><td><strong>F128</strong></td><td>128 CUs</td><td>Enterprise</td><td>~$16,800</td><td>~$10,005</td><td>~40%</td></tr>
+          <tr><td><strong>F256+</strong></td><td>256+ CUs</td><td>Large enterprise</td><td>~$33,600+</td><td>~$20,011+</td><td>~40%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">💡 Compute ≠ Storage — They Are Billed Separately</div>
+      <p>The prices above cover <strong>compute capacity only</strong> (CU processing power for Spark, SQL, Power BI, Data Factory, etc.). <strong>OneLake storage is billed separately</strong> at standard Azure storage rates (~$0.023/GB/month for hot tier). This means you pay for capacity even when paused if data remains stored. Budget for both compute and storage when planning your Fabric costs.</p>
+    </div>
+
+    <p><em>*Approximate pricing (USD, East US region). Check the <a href="https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/" class="ext-link" target="_blank" rel="noopener">official pricing page</a> for current rates. 3-year reservations offer even deeper discounts. F64+ includes free Power BI viewer access (no Pro license needed).</em></p>
+
+    <h3>Pricing Models</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Pay-As-You-Go</h4>
+        <p>Billed per second of compute used. Ideal for variable workloads. Pause capacity when not needed to stop billing.</p>
+      </div>
+      <div class="card">
+        <h4>Reserved Capacity</h4>
+        <p>1-year or 3-year commitment with up to 40% discount. Best for predictable, always-on production workloads.</p>
+      </div>
+      <div class="card">
+        <h4>Fabric Trial</h4>
+        <p>Free 60-day trial with F64 capacity. Great for evaluation and proof-of-concept before committing.</p>
+      </div>
+    </div>
+
+    <!-- Interactive Capacity Calculator -->
+    <h3>🧮 Capacity Cost Calculator</h3>
+    <p>Estimate your Fabric capacity needs based on your expected workload mix. Adjust the sliders to see a real-time SKU recommendation.</p>
+
+    <div class="calculator-container" id="capacity-calculator">
+      <div class="calc-row">
+        <label>Spark notebook hours / day</label>
+        <input type="range" id="calc-spark" min="0" max="24" value="4" step="1">
+        <span class="calc-value" id="val-spark">4h</span>
+      </div>
+      <div class="calc-row">
+        <label>Concurrent BI report viewers</label>
+        <input type="range" id="calc-bi" min="0" max="200" value="20" step="5">
+        <span class="calc-value" id="val-bi">20</span>
+      </div>
+      <div class="calc-row">
+        <label>Data Factory pipeline runs / day</label>
+        <input type="range" id="calc-pipelines" min="0" max="100" value="10" step="1">
+        <span class="calc-value" id="val-pipelines">10</span>
+      </div>
+      <div class="calc-row">
+        <label>Data Warehouse queries / hour</label>
+        <input type="range" id="calc-dw" min="0" max="200" value="20" step="5">
+        <span class="calc-value" id="val-dw">20/h</span>
+      </div>
+      <div class="calc-row">
+        <label>Real-Time Intelligence streams</label>
+        <input type="range" id="calc-rt" min="0" max="20" value="0" step="1">
+        <span class="calc-value" id="val-rt">0</span>
+      </div>
+      <div class="calc-result"></div>
+    </div>
+
+    <h3>Cost Optimization Strategies</h3>
+    <ul>
+      <li><strong>Pause/Resume:</strong> Pause non-production capacities after business hours and on weekends — savings up to 70%</li>
+      <li><strong>Right-size capacity:</strong> Use the <strong>Capacity Metrics App</strong> to monitor utilization and resize accordingly</li>
+      <li><strong>Smoothing &amp; Bursting:</strong> Fabric smooths CU usage over 24-hour windows, allowing short bursts without throttling</li>
+      <li><strong>Optimize Spark jobs:</strong> Use V-Order optimization, partition pruning, and right-size Spark sessions</li>
+      <li><strong>Use Direct Lake:</strong> Avoid import-mode datasets that consume memory — Direct Lake reads from OneLake directly</li>
+      <li><strong>Monitor with Capacity Metrics:</strong> Install the <a href="https://learn.microsoft.com/fabric/enterprise/metrics-app" class="ext-link" target="_blank" rel="noopener">Microsoft Fabric Capacity Metrics app</a> to track CU consumption by workload</li>
+    </ul>
+
+    <!-- How Capacity Works: Smoothing, Bursting & Throttling -->
+    <h3>How Capacity Works: Smoothing, Bursting &amp; Throttling</h3>
+    <p>Fabric doesn't enforce CU limits on a per-second basis. Instead, it uses a <strong>smoothing</strong> mechanism that spreads your CU consumption over time windows, allowing temporary <strong>bursts</strong> above your SKU limit. Understanding these mechanics is essential for right-sizing and avoiding unexpected throttling.</p>
+
+    <!-- Concept 1: Smoothing -->
+    <h4>📈 Smoothing (24-Hour Window)</h4>
+    <p>Every Fabric operation consumes CU-seconds. Instead of evaluating consumption instantly, Fabric <strong>smooths it over a rolling 24-hour window</strong>. This means a heavy job at 2 AM can be offset by idle time at 3 AM — your effective utilization is the average, not the peak.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">CU Smoothing — Peaks Are Averaged Over 24 Hours</div>
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;width:100%;height:auto;">
+        <!-- Grid -->
+        <line x1="60" y1="20" x2="60" y2="180" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="60" y1="180" x2="680" y2="180" stroke="#e0e0e0" stroke-width="1"/>
+        <!-- Y axis labels -->
+        <text x="52" y="25" text-anchor="end" font-size="11" fill="#888899">CU</text>
+        <text x="52" y="105" text-anchor="end" font-size="10" fill="#888899">SKU Limit</text>
+        <!-- SKU limit line -->
+        <line x1="60" y1="100" x2="680" y2="100" stroke="#0078D4" stroke-width="2" stroke-dasharray="8,4"/>
+        <text x="685" y="104" font-size="10" fill="#0078D4" text-anchor="start" font-weight="600">F64 limit</text>
+        <!-- Actual usage (spiky) -->
+        <polyline points="60,160 100,155 140,130 180,50 210,40 240,65 280,140 320,170 370,165 410,150 440,45 470,55 500,130 540,170 580,168 620,160 660,155 680,158" fill="none" stroke="#DA3B01" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Smoothed average -->
+        <line x1="60" y1="130" x2="680" y2="130" stroke="#498205" stroke-width="2.5"/>
+        <!-- Legend -->
+        <rect x="80" y="196" width="16" height="3" rx="1" fill="#DA3B01"/>
+        <text x="100" y="200" font-size="11" fill="#555566">Actual CU usage (spiky)</text>
+        <rect x="280" y="196" width="16" height="3" rx="1" fill="#498205"/>
+        <text x="300" y="200" font-size="11" fill="#555566">Smoothed average (what Fabric evaluates)</text>
+        <rect x="520" y="196" width="16" height="3" rx="1" fill="#0078D4" stroke-dasharray="4,2"/>
+        <text x="540" y="200" font-size="11" fill="#555566">SKU limit</text>
+        <!-- Time labels -->
+        <text x="60" y="193" font-size="10" fill="#888899">12 AM</text>
+        <text x="215" y="193" font-size="10" fill="#888899">6 AM</text>
+        <text x="370" y="193" font-size="10" fill="#888899">12 PM</text>
+        <text x="525" y="193" font-size="10" fill="#888899">6 PM</text>
+        <text x="655" y="193" font-size="10" fill="#888899">12 AM</text>
+      </svg>
+    </div>
+    <p>As long as the <strong style="color:var(--accent-green)">green smoothed line</strong> stays below the <strong style="color:var(--accent-blue)">blue SKU limit</strong>, your capacity is healthy — even if individual spikes (<strong style="color:var(--accent-orange)">orange</strong>) exceed the limit temporarily.</p>
+
+    <!-- Concept 2: Bursting -->
+    <h4>⚡ Bursting</h4>
+    <p>Fabric allows your workloads to <strong>burst above your SKU's CU allocation</strong> for short periods. This is not extra capacity you pay for — it's borrowed from your future idle time. Bursting is automatic and requires no configuration.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Bursting — Borrow Now, Pay Back with Idle Time Later</div>
+      <svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;width:100%;height:auto;">
+        <!-- Grid -->
+        <line x1="60" y1="20" x2="60" y2="190" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="60" y1="190" x2="680" y2="190" stroke="#e0e0e0" stroke-width="1"/>
+        <!-- SKU limit line -->
+        <line x1="60" y1="110" x2="680" y2="110" stroke="#0078D4" stroke-width="2" stroke-dasharray="8,4"/>
+        <text x="685" y="114" font-size="10" fill="#0078D4" text-anchor="start" font-weight="600">SKU limit</text>
+        <!-- Area fill for burst zone -->
+        <polygon points="200,110 220,70 240,40 260,35 280,45 310,70 340,110 340,110 200,110" fill="#DA3B01" fill-opacity="0.12"/>
+        <!-- Area fill for payback zone -->
+        <polygon points="340,110 340,170 400,175 450,172 500,168 540,165 580,160 580,110" fill="#498205" fill-opacity="0.12"/>
+        <!-- Usage line -->
+        <polyline points="60,165 100,160 150,150 200,110 220,70 240,40 260,35 280,45 310,70 340,110 400,175 450,172 500,168 540,165 580,160 620,155 660,158 680,160" fill="none" stroke="#555566" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Burst label -->
+        <text x="265" y="28" font-size="11" fill="#DA3B01" text-anchor="middle" font-weight="600">⚡ Burst zone</text>
+        <path d="M265,32 L265,38" stroke="#DA3B01" stroke-width="1"/>
+        <!-- Payback label -->
+        <text x="460" y="155" font-size="11" fill="#498205" text-anchor="middle" font-weight="600">💤 Payback (idle)</text>
+        <!-- Time labels -->
+        <text x="200" y="205" font-size="10" fill="#888899">Heavy ETL job</text>
+        <text x="410" y="205" font-size="10" fill="#888899">Low activity period</text>
+        <!-- Legend -->
+        <rect x="80" y="218" width="16" height="10" rx="2" fill="#DA3B01" fill-opacity="0.15" stroke="#DA3B01" stroke-width="1"/>
+        <text x="100" y="226" font-size="11" fill="#555566">CUs borrowed (burst above limit)</text>
+        <rect x="360" y="218" width="16" height="10" rx="2" fill="#498205" fill-opacity="0.15" stroke="#498205" stroke-width="1"/>
+        <text x="380" y="226" font-size="11" fill="#555566">CUs returned (idle repays the debt)</text>
+      </svg>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Key Insight</div>
+      <p>Bursting lets you run a heavy Spark job at 150% of your SKU for 2 hours without throttling — <strong>as long as the rest of your 24-hour window is quiet enough</strong> to bring the smoothed average back under the limit.</p>
+    </div>
+
+    <!-- Concept 3: Throttling -->
+    <h4>🚫 Throttling &amp; Rejection</h4>
+    <p>When your smoothed CU consumption <strong>exceeds the SKU limit for too long</strong>, Fabric begins throttling. There are two levels of enforcement:</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Throttling Stages — From Healthy to Rejected</div>
+      <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;width:100%;height:auto;">
+        <!-- Stage boxes -->
+        <!-- Healthy -->
+        <rect x="20" y="30" width="140" height="90" rx="10" fill="#498205" fill-opacity="0.1" stroke="#498205" stroke-width="2"/>
+        <text x="90" y="58" text-anchor="middle" font-size="24">✅</text>
+        <text x="90" y="78" text-anchor="middle" font-size="13" fill="#498205" font-weight="700">Healthy</text>
+        <text x="90" y="95" text-anchor="middle" font-size="10" fill="#555566">Smoothed CU</text>
+        <text x="90" y="108" text-anchor="middle" font-size="10" fill="#555566">&lt; SKU limit</text>
+        <!-- Arrow -->
+        <text x="182" y="80" font-size="22" fill="#888899">→</text>
+        <!-- Throttled -->
+        <rect x="210" y="30" width="140" height="90" rx="10" fill="#FFB900" fill-opacity="0.15" stroke="#c19c00" stroke-width="2"/>
+        <text x="280" y="58" text-anchor="middle" font-size="24">⚠️</text>
+        <text x="280" y="78" text-anchor="middle" font-size="13" fill="#c19c00" font-weight="700">Throttled</text>
+        <text x="280" y="95" text-anchor="middle" font-size="10" fill="#555566">Interactive jobs</text>
+        <text x="280" y="108" text-anchor="middle" font-size="10" fill="#555566">delayed 20s+</text>
+        <!-- Arrow -->
+        <text x="372" y="80" font-size="22" fill="#888899">→</text>
+        <!-- Heavily Throttled -->
+        <rect x="400" y="30" width="140" height="90" rx="10" fill="#DA3B01" fill-opacity="0.12" stroke="#DA3B01" stroke-width="2"/>
+        <text x="470" y="58" text-anchor="middle" font-size="24">🔶</text>
+        <text x="470" y="78" text-anchor="middle" font-size="13" fill="#DA3B01" font-weight="700">Heavy Throttle</text>
+        <text x="470" y="95" text-anchor="middle" font-size="10" fill="#555566">Background jobs</text>
+        <text x="470" y="108" text-anchor="middle" font-size="10" fill="#555566">also delayed</text>
+        <!-- Arrow -->
+        <text x="562" y="80" font-size="22" fill="#888899">→</text>
+        <!-- Rejected -->
+        <rect x="590" y="30" width="110" height="90" rx="10" fill="#D13438" fill-opacity="0.12" stroke="#D13438" stroke-width="2"/>
+        <text x="645" y="58" text-anchor="middle" font-size="24">🛑</text>
+        <text x="645" y="78" text-anchor="middle" font-size="13" fill="#D13438" font-weight="700">Rejected</text>
+        <text x="645" y="95" text-anchor="middle" font-size="10" fill="#555566">New requests</text>
+        <text x="645" y="108" text-anchor="middle" font-size="10" fill="#555566">fail / error out</text>
+        <!-- Severity bar -->
+        <rect x="20" y="140" width="680" height="8" rx="4" fill="url(#severityGrad)"/>
+        <defs><linearGradient id="severityGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#498205"/><stop offset="40%" stop-color="#FFB900"/><stop offset="70%" stop-color="#DA3B01"/><stop offset="100%" stop-color="#D13438"/>
+        </linearGradient></defs>
+        <text x="20" y="162" font-size="10" fill="#888899">Low overage</text>
+        <text x="660" y="162" font-size="10" fill="#888899" text-anchor="end">Sustained overage</text>
+      </svg>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Stage</th><th>Trigger</th><th>Impact</th><th>What to Do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>✅ Healthy</strong></td><td>Smoothed CU &lt; 100% of SKU</td><td>No impact — all jobs run normally</td><td>Keep monitoring</td></tr>
+          <tr><td><strong>⚠️ Throttled</strong></td><td>Smoothed CU exceeds 100% (10-min window overage)</td><td>Interactive jobs (queries, reports) delayed 20+ seconds</td><td>Reduce concurrent jobs or wait for usage to drop</td></tr>
+          <tr><td><strong>🔶 Heavy Throttle</strong></td><td>Sustained overage across multiple windows</td><td>Both interactive &amp; background jobs delayed significantly</td><td>Scale up SKU or pause non-critical workloads</td></tr>
+          <tr><td><strong>🛑 Rejected</strong></td><td>Extreme sustained overage (24-hour carry-forward full)</td><td>New job submissions fail with errors</td><td>Immediately scale up or cancel heavy jobs</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Concrete Example -->
+    <h4>🧮 Worked Example: F64 Capacity — A Day in the Life</h4>
+    <p>Here's a concrete scenario for a team running on <strong>F64 (64 CUs)</strong> to illustrate how smoothing and bursting work together:</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">F64 Example — 24-Hour CU Usage Timeline</div>
+      <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" style="max-width:720px;width:100%;height:auto;">
+        <!-- Axes -->
+        <line x1="70" y1="20" x2="70" y2="220" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="70" y1="220" x2="700" y2="220" stroke="#e0e0e0" stroke-width="1"/>
+        <!-- Y axis labels -->
+        <text x="62" y="24" text-anchor="end" font-size="10" fill="#888899">CU</text>
+        <text x="62" y="48" text-anchor="end" font-size="10" fill="#888899">128</text>
+        <text x="62" y="98" text-anchor="end" font-size="10" fill="#888899">96</text>
+        <text x="62" y="128" text-anchor="end" font-size="10" fill="#888899">64</text>
+        <text x="62" y="168" text-anchor="end" font-size="10" fill="#888899">32</text>
+        <text x="62" y="218" text-anchor="end" font-size="10" fill="#888899">0</text>
+        <!-- Y grid lines -->
+        <line x1="70" y1="45" x2="700" y2="45" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="70" y1="95" x2="700" y2="95" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="70" y1="165" x2="700" y2="165" stroke="#f0f0f0" stroke-width="1"/>
+        <!-- SKU limit at 64 CU -->
+        <line x1="70" y1="125" x2="700" y2="125" stroke="#0078D4" stroke-width="2" stroke-dasharray="8,4"/>
+        <text x="705" y="129" font-size="10" fill="#0078D4" font-weight="600">64 CU</text>
+        <!-- Time blocks (stacked bars) -->
+        <!-- 12-6 AM: Idle (5 CU) -->
+        <rect x="80" y="210" width="140" height="10" rx="3" fill="#498205" fill-opacity="0.3"/>
+        <text x="150" y="207" text-anchor="middle" font-size="10" fill="#498205" font-weight="600">~5 CU</text>
+        <text x="150" y="237" text-anchor="middle" font-size="10" fill="#888899">12–6 AM</text>
+        <text x="150" y="249" text-anchor="middle" font-size="9" fill="#555566">Idle / scheduled refresh</text>
+        <!-- 6-9 AM: ETL burst (120 CU) -->
+        <rect x="230" y="55" width="85" height="165" rx="3" fill="#DA3B01" fill-opacity="0.2"/>
+        <rect x="230" y="125" width="85" height="95" rx="0" fill="#DA3B01" fill-opacity="0.1"/>
+        <text x="272" y="100" text-anchor="middle" font-size="10" fill="#DA3B01" font-weight="600">~120 CU</text>
+        <text x="272" y="113" text-anchor="middle" font-size="9" fill="#DA3B01">⚡ BURST</text>
+        <text x="272" y="237" text-anchor="middle" font-size="10" fill="#888899">6–9 AM</text>
+        <text x="272" y="249" text-anchor="middle" font-size="9" fill="#555566">Morning ETL pipelines</text>
+        <!-- 9 AM-12 PM: Moderate (50 CU) -->
+        <rect x="325" y="140" width="85" height="80" rx="3" fill="#0078D4" fill-opacity="0.2"/>
+        <text x="367" y="175" text-anchor="middle" font-size="10" fill="#0078D4" font-weight="600">~50 CU</text>
+        <text x="367" y="237" text-anchor="middle" font-size="10" fill="#888899">9 AM–12 PM</text>
+        <text x="367" y="249" text-anchor="middle" font-size="9" fill="#555566">BI queries + Spark</text>
+        <!-- 12-3 PM: Light (30 CU) -->
+        <rect x="420" y="172" width="85" height="48" rx="3" fill="#498205" fill-opacity="0.2"/>
+        <text x="462" y="193" text-anchor="middle" font-size="10" fill="#498205" font-weight="600">~30 CU</text>
+        <text x="462" y="237" text-anchor="middle" font-size="10" fill="#888899">12–3 PM</text>
+        <text x="462" y="249" text-anchor="middle" font-size="9" fill="#555566">Light BI usage</text>
+        <!-- 3-6 PM: Moderate (55 CU) -->
+        <rect x="515" y="135" width="85" height="85" rx="3" fill="#0078D4" fill-opacity="0.2"/>
+        <text x="557" y="175" text-anchor="middle" font-size="10" fill="#0078D4" font-weight="600">~55 CU</text>
+        <text x="557" y="237" text-anchor="middle" font-size="10" fill="#888899">3–6 PM</text>
+        <text x="557" y="249" text-anchor="middle" font-size="9" fill="#555566">Reports + ad-hoc</text>
+        <!-- 6 PM-12 AM: Low (10 CU) -->
+        <rect x="610" y="205" width="80" height="15" rx="3" fill="#498205" fill-opacity="0.3"/>
+        <text x="650" y="201" text-anchor="middle" font-size="10" fill="#498205" font-weight="600">~10 CU</text>
+        <text x="650" y="237" text-anchor="middle" font-size="10" fill="#888899">6 PM–12 AM</text>
+        <text x="650" y="249" text-anchor="middle" font-size="9" fill="#555566">Minimal activity</text>
+        <!-- Smoothed average line -->
+        <line x1="70" y1="170" x2="700" y2="170" stroke="#498205" stroke-width="2.5"/>
+        <text x="705" y="174" font-size="10" fill="#498205" font-weight="600">~38 CU avg</text>
+        <!-- Annotations -->
+        <text x="385" y="270" text-anchor="middle" font-size="11" fill="#555566" font-weight="600">24-hour smoothed average: ~38 CU → well under 64 CU limit ✅</text>
+      </svg>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Time Block</th><th>Activity</th><th>CU Usage</th><th>Duration</th><th>CU-Hours</th></tr></thead>
+        <tbody>
+          <tr><td>12–6 AM</td><td>Idle + scheduled refresh</td><td>~5 CU</td><td>6 hours</td><td>30</td></tr>
+          <tr><td>6–9 AM</td><td>Morning ETL pipelines (Spark + Data Factory)</td><td><strong>~120 CU ⚡</strong></td><td>3 hours</td><td>360</td></tr>
+          <tr><td>9 AM–12 PM</td><td>BI queries + Spark notebooks</td><td>~50 CU</td><td>3 hours</td><td>150</td></tr>
+          <tr><td>12–3 PM</td><td>Light BI usage, lunch break</td><td>~30 CU</td><td>3 hours</td><td>90</td></tr>
+          <tr><td>3–6 PM</td><td>Reports + ad-hoc Spark</td><td>~55 CU</td><td>3 hours</td><td>165</td></tr>
+          <tr><td>6 PM–12 AM</td><td>Minimal activity</td><td>~10 CU</td><td>6 hours</td><td>60</td></tr>
+          <tr style="background:var(--bg-tertiary);font-weight:600"><td colspan="3">Total</td><td>24 hours</td><td>855 CU-hours</td></tr>
+          <tr style="background:var(--bg-tertiary);font-weight:600"><td colspan="3">24h Average = 855 ÷ 24</td><td></td><td><strong>~35.6 CU ✅</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Why This Works</div>
+      <p>Even though the 6–9 AM ETL burst consumed <strong>120 CU (nearly 2× the F64 limit)</strong>, the 24-hour smoothed average is only ~36 CU — well under the 64 CU limit. The long idle hours from 12–6 AM and 6 PM–12 AM "pay back" the burst. <strong>No throttling occurs.</strong></p>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ When This Breaks</div>
+      <p>If this same team also ran a second heavy ETL job (100+ CU) from 3–6 PM, the 24-hour average would jump to ~52 CU. Add concurrent Spark notebooks and it could exceed 64 CU — triggering throttling. The fix: either stagger heavy jobs, optimize them, or scale to F128.</p>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Watch Out</div>
+      <p>If your capacity is <strong>throttled</strong> (CU usage exceeds your allocation), jobs will be queued or rejected. Monitor the <strong>overages</strong> dashboard in the Capacity Metrics app and consider scaling up or optimizing heavy jobs.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/enterprise/capacity-planning-overview" target="_blank">Capacity Planning Guide ↗</a>
+      <a href="https://learn.microsoft.com/fabric/enterprise/plan-capacity" target="_blank">Plan Capacity Size ↗</a>
+      <a href="https://aka.ms/fabricskuestimator" target="_blank">SKU Estimator Tool ↗</a>
+      <a href="https://learn.microsoft.com/fabric/enterprise/metrics-app" target="_blank">Capacity Metrics App ↗</a>
+      <a href="https://learn.microsoft.com/fabric/enterprise/licenses" target="_blank">Licensing & SKUs ↗</a>
+      <a href="https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/" target="_blank">Fabric Pricing ↗</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       Capacity Sizing Guide
+       =============================================== -->
+  <section id="sizing" class="section" data-roles="it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Planning</div>
+      <h2>Capacity Sizing Guide</h2>
+      <p class="section-subtitle">How to right-size your Fabric capacity for new workloads and migrations — avoid over-provisioning and throttling.</p>
+    </div>
+
+    <h3>Sizing Approach</h3>
+    <p>Capacity sizing is not a one-time exercise — it's an iterative process. Start with an estimate, deploy, monitor, and adjust. The key principle: <strong>size for your typical load, not your peak</strong>. Fabric's bursting and smoothing mechanisms handle short spikes automatically.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Capacity Sizing Lifecycle</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📐</div>
+            <div class="stage-name">Estimate</div>
+          </div>
+          <div class="stage-desc">Use the SKU Estimator and workload analysis</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🧪</div>
+            <div class="stage-name">Pilot</div>
+          </div>
+          <div class="stage-desc">Run representative workloads on trial capacity</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📊</div>
+            <div class="stage-name">Monitor</div>
+          </div>
+          <div class="stage-desc">Track CU consumption with Capacity Metrics app</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">⚖️</div>
+            <div class="stage-name">Adjust</div>
+          </div>
+          <div class="stage-desc">Scale up/down based on actual usage patterns</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Sizing for New Workloads</h3>
+    <p>When starting fresh with Fabric, follow this framework:</p>
+
+    <h4>Step 1: Inventory Your Workloads</h4>
+    <p>Catalog what you plan to run and the expected scale:</p>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Workload Type</th><th>Key Sizing Factors</th><th>CU Impact</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Data Ingestion</strong> (Data Factory)</td><td>Data volume, number of sources, refresh frequency</td><td>Low–Medium</td></tr>
+          <tr><td><strong>Spark Notebooks</strong></td><td>Data volume, transformation complexity, cluster size, concurrency</td><td>High</td></tr>
+          <tr><td><strong>Data Warehouse</strong> (T-SQL)</td><td>Query complexity, concurrent users, data volume</td><td>Medium–High</td></tr>
+          <tr><td><strong>Power BI</strong> (Direct Lake / Import)</td><td>Dataset size, concurrent report viewers, refresh rate</td><td>Low–Medium</td></tr>
+          <tr><td><strong>Real-Time Intelligence</strong></td><td>Event ingestion rate, query concurrency, retention period</td><td>Medium–High</td></tr>
+          <tr><td><strong>Data Science / ML</strong></td><td>Model training size, experiment frequency, serving load</td><td>High</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Step 2: Use the SKU Estimator</h4>
+    <p>Microsoft provides an official <strong><a href="https://aka.ms/fabricskuestimator" class="ext-link" target="_blank" rel="noopener">Fabric SKU Estimator</a></strong> tool. Input your expected user count, data volumes, refresh rates, and workload mix to get a recommended starting SKU.</p>
+
+    <h4>Step 3: Start with Trial or Dev Capacity</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Scenario</th><th>Recommended Starting SKU</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td>POC / Learning (1-3 users)</td><td>F2 or Free Trial (F64)</td><td>Minimal cost; trial gives 60 days of F64 for free</td></tr>
+          <tr><td>Small team (5-10 users, &lt;50 tables)</td><td>F4 – F8</td><td>Enough for light Spark jobs + Power BI</td></tr>
+          <tr><td>Department (10-50 users, multiple pipelines)</td><td>F16 – F32</td><td>Concurrent Spark + SQL + BI workloads</td></tr>
+          <tr><td>Enterprise (50+ users, cross-domain)</td><td>F64 – F128</td><td>F64+ enables free Power BI viewing; handles concurrency</td></tr>
+          <tr><td>Large enterprise (multi-region, mission-critical)</td><td>F256+</td><td>High concurrency, multiple domains, always-on workloads</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Rule of Thumb</div>
+      <p>Add <strong>10-15% headroom</strong> above your average expected CU usage to account for growth and unexpected spikes. It's better to start one SKU lower and scale up than to over-provision — Fabric lets you resize capacity at any time.</p>
+    </div>
+
+    <h3>Sizing for Migrations</h3>
+    <p>When migrating from an existing platform, you have historical usage data to guide your sizing:</p>
+
+    <h4>From Power BI Premium (P-SKU)</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Power BI Premium SKU</th><th>Equivalent Fabric SKU</th><th>Capacity Units</th></tr></thead>
+        <tbody>
+          <tr><td>P1</td><td>F64</td><td>64 CUs</td></tr>
+          <tr><td>P2</td><td>F128</td><td>128 CUs</td></tr>
+          <tr><td>P3</td><td>F256</td><td>256 CUs</td></tr>
+          <tr><td>P4</td><td>F512</td><td>512 CUs</td></tr>
+          <tr><td>P5</td><td>F1024</td><td>1024 CUs</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>You can enable Fabric on your existing P-SKU capacity — no need to purchase a new one. The same capacity pool now supports all Fabric workloads in addition to Power BI.</p>
+
+    <h4>From Azure Synapse / Databricks</h4>
+    <ul>
+      <li><strong>Inventory current compute:</strong> Document your Spark pool sizes, SQL DWU usage, and pipeline activity hours</li>
+      <li><strong>Map to CUs:</strong> There's no exact 1:1 mapping. Run representative workloads on a Fabric trial to benchmark actual CU consumption</li>
+      <li><strong>Start parallel:</strong> Run Fabric and legacy platform side-by-side during migration. Compare performance and CU usage before cutting over</li>
+      <li><strong>Use Shortcuts:</strong> Point Fabric to your existing ADLS storage via shortcuts — this lets you test Fabric compute without moving data</li>
+    </ul>
+
+    <h4>From On-Premises (SQL Server / SSIS)</h4>
+    <ul>
+      <li><strong>Measure peak CPU and memory</strong> on existing SQL Servers during ETL windows</li>
+      <li><strong>Start with F8-F16</strong> for most departmental SQL Server migrations</li>
+      <li><strong>Test with mirroring:</strong> Use Fabric mirroring to replicate your SQL databases to OneLake and measure CU impact before full migration</li>
+      <li><strong>Account for concurrency:</strong> Cloud workloads often see higher concurrency than on-prem — size accordingly</li>
+    </ul>
+
+    <h3>Ongoing Optimization</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>📊 Monitor with Capacity Metrics</h4>
+        <p>Install the <a href="https://learn.microsoft.com/fabric/enterprise/metrics-app" class="ext-link" target="_blank" rel="noopener">Capacity Metrics app</a> from day one. Track CU consumption by workload type, identify throttling events, and spot optimization opportunities.</p>
+      </div>
+      <div class="card">
+        <h4>⏸️ Pause Non-Production</h4>
+        <p>Pause dev/test capacities outside business hours and on weekends. This alone can save 60-70% on non-production capacity costs.</p>
+      </div>
+      <div class="card">
+        <h4>🔄 Leverage Bursting & Smoothing</h4>
+        <p>Fabric smooths CU consumption over 24-hour windows and allows bursting up to the capacity limit. Size for your average load, not peak — bursting handles spikes.</p>
+      </div>
+      <div class="card">
+        <h4>🎯 Optimize Before Scaling</h4>
+        <p>Before upgrading your SKU, optimize: V-Order on tables, efficient Spark sessions, proper partitioning, and well-designed DAX. Fix the bottleneck, not the capacity.</p>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Common Sizing Mistakes</div>
+      <p><strong>1.</strong> Over-provisioning from day one — start small, monitor, scale up. <strong>2.</strong> Ignoring concurrency — multiple users running Spark jobs simultaneously consume far more CUs than sequential runs. <strong>3.</strong> Not using the Capacity Metrics app — flying blind leads to either overspending or throttling. <strong>4.</strong> Forgetting that F64 is the minimum for free Power BI viewer access — factor this into your licensing decision.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/enterprise/licenses" target="_blank">Fabric Licenses & SKUs ↗</a>
+      <a href="https://learn.microsoft.com/fabric/enterprise/fabric-operations" target="_blank">Fabric Operations ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="operations.html">Operations — CI/CD & Deployment →</a>
+    </div>
+
+  </section>
+
+  <!-- ===============================================
+       TCO / ROI Calculator
+       =============================================== -->
+  <section id="tco-calculator" class="section" data-roles="business-leader,it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Planning</div>
+      <h2>💰 TCO / ROI Calculator</h2>
+      <p class="section-subtitle">Compare your current data platform spend against Microsoft Fabric to estimate savings and build a business case.</p>
+    </div>
+
+    <p>Enter your current monthly costs for each category below. The calculator estimates the equivalent Fabric cost based on published pricing and typical migration benchmarks, then shows potential savings and a recommended SKU.</p>
+
+    <div class="calculator-container" id="tco-calc">
+      <h4 style="margin-top:0;margin-bottom:16px;">Current Monthly Spend</h4>
+      <div class="calc-row">
+        <label>Data Warehouse (Synapse / Snowflake / Redshift)</label>
+        <input type="range" id="tco-dw" min="0" max="50000" value="8000" step="500">
+        <span class="calc-value" id="tco-val-dw">$8,000</span>
+      </div>
+      <div class="calc-row">
+        <label>ETL / Pipelines (ADF / Databricks / Glue)</label>
+        <input type="range" id="tco-etl" min="0" max="30000" value="5000" step="500">
+        <span class="calc-value" id="tco-val-etl">$5,000</span>
+      </div>
+      <div class="calc-row">
+        <label>BI &amp; Reporting (Power BI Premium / Tableau)</label>
+        <input type="range" id="tco-bi" min="0" max="20000" value="4000" step="500">
+        <span class="calc-value" id="tco-val-bi">$4,000</span>
+      </div>
+      <div class="calc-row">
+        <label>Storage (ADLS / S3 / Blob)</label>
+        <input type="range" id="tco-storage" min="0" max="10000" value="2000" step="200">
+        <span class="calc-value" id="tco-val-storage">$2,000</span>
+      </div>
+      <div class="calc-row">
+        <label>Data Volume (TB)</label>
+        <input type="range" id="tco-volume" min="1" max="500" value="10" step="1">
+        <span class="calc-value" id="tco-val-volume">10 TB</span>
+      </div>
+      <div class="calc-row">
+        <label>Total Report Consumers</label>
+        <input type="range" id="tco-users" min="10" max="2000" value="100" step="10">
+        <span class="calc-value" id="tco-val-users">100</span>
+      </div>
+      <div class="tco-result" id="tco-result"></div>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 About These Estimates</div>
+      <p>This calculator provides <strong>directional estimates</strong> based on published Fabric pricing and typical migration savings reported in Microsoft case studies. Actual savings depend on workload complexity, optimization, and usage patterns. For precise estimates, use the <a href="https://aka.ms/fabricskuestimator" class="ext-link" target="_blank" rel="noopener">official SKU Estimator</a> and run a pilot.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/" target="_blank">Fabric Pricing ↗</a>
+      <a href="https://aka.ms/fabricskuestimator" target="_blank">SKU Estimator Tool ↗</a>
+      <a href="scenarios.html" target="_blank">Customer Scenario Templates →</a>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('capacity-planning');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

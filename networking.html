@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Networking Security — Microsoft Fabric Guide</title>
+  <meta name="description" content="Network isolation, private endpoints, managed VNets, and zero-trust networking best practices for Microsoft Fabric.">
+  <meta property="og:title" content="Networking Security — Microsoft Fabric Guide">
+  <meta property="og:description" content="Network isolation, private endpoints, managed VNets, and zero-trust networking best practices for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/networking">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Networking Security — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Network isolation, private endpoints, managed VNets, and zero-trust networking best practices for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><strong>IT Admins, Security Engineers, Network Architects</strong> — anyone responsible for securing connectivity to and from Microsoft Fabric in enterprise environments.</p>
+  </div>
+
+  <!-- ======== Section: Zero-Trust Overview ======== -->
+  <section class="section" id="zero-trust">
+    <div class="section-header">
+      <div class="section-number">Networking</div>
+      <h2>Zero-Trust Network Architecture</h2>
+      <p class="section-subtitle">Microsoft Fabric is a SaaS platform, but enterprises still need strict network boundaries. Here's how to integrate Fabric into your corporate zero-trust posture.</p>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Key Principle</div>
+      <p>Zero-trust means <strong>never trust, always verify</strong>. All traffic between users, Fabric, and data sources should traverse private channels — disable public endpoints wherever possible.</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 24px;">
+      <div class="card">
+        <h4>🔒 Inbound — Users to Fabric</h4>
+        <p>Control how users and applications connect to Fabric workspaces and services.</p>
+        <ul>
+          <li><strong>Azure Private Link</strong> — Route all user traffic through private endpoints in your VNet</li>
+          <li><strong>Conditional Access</strong> — Entra ID policies enforce device compliance, location, MFA</li>
+          <li><strong>Tenant restrictions</strong> — Prevent data exfiltration to unauthorized tenants</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔗 Outbound — Fabric to Data</h4>
+        <p>Control how Fabric connects to your private data sources and external services.</p>
+        <ul>
+          <li><strong>Managed Private Endpoints</strong> — Fabric connects to your resources through Azure backbone, not public internet</li>
+          <li><strong>VNet Data Gateways</strong> — Bridge Fabric to on-premises or VNet-isolated resources</li>
+          <li><strong>Trusted Workspace Access</strong> — Allow firewalled Storage Accounts to trust Fabric</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🛡️ Internal — Between Services</h4>
+        <p>Secure communication between Fabric components and Microsoft backbone services.</p>
+        <ul>
+          <li><strong>Managed VNets</strong> — Spark workloads run in Fabric-managed virtual networks with controlled egress</li>
+          <li><strong>Service tags</strong> — NSG rules using <code>DataFactory</code> and <code>PowerBI</code> service tags</li>
+          <li><strong>Data encryption</strong> — TLS 1.2+ in transit, Microsoft-managed keys at rest</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div style="margin-top: 32px;">
+      <h3 style="margin-bottom: 16px;">Network Architecture Overview</h3>
+      <svg viewBox="0 0 800 380" style="width:100%;max-width:800px;display:block;margin:0 auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background zones -->
+        <rect x="10" y="10" width="250" height="360" rx="12" fill="var(--bg-secondary)" stroke="var(--border-color)" stroke-width="1.5"/>
+        <rect x="290" y="10" width="220" height="360" rx="12" fill="var(--bg-secondary)" stroke="var(--accent-blue)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <rect x="540" y="10" width="250" height="360" rx="12" fill="var(--bg-secondary)" stroke="var(--border-color)" stroke-width="1.5"/>
+
+        <!-- Zone labels -->
+        <text x="135" y="40" text-anchor="middle" fill="var(--text-muted)" font-size="11" font-weight="600" font-family="var(--font-sans)">YOUR CORPORATE NETWORK</text>
+        <text x="400" y="40" text-anchor="middle" fill="var(--accent-blue)" font-size="11" font-weight="600" font-family="var(--font-sans)">MICROSOFT FABRIC (SaaS)</text>
+        <text x="665" y="40" text-anchor="middle" fill="var(--text-muted)" font-size="11" font-weight="600" font-family="var(--font-sans)">AZURE DATA SOURCES</text>
+
+        <!-- Corporate side boxes -->
+        <rect x="35" y="60" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="135" y="82" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">👤 Users & Apps</text>
+        <text x="135" y="98" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Entra ID + Conditional Access</text>
+
+        <rect x="35" y="130" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="135" y="152" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">🌐 Hub VNet</text>
+        <text x="135" y="168" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Azure Firewall + NSGs</text>
+
+        <rect x="35" y="200" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+        <text x="135" y="222" text-anchor="middle" fill="var(--accent-blue)" font-size="12" font-weight="600" font-family="var(--font-sans)">🔗 Private Endpoints</text>
+        <text x="135" y="238" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">PE for Fabric + DNS zones</text>
+
+        <rect x="35" y="270" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="135" y="292" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">🏢 On-Premises</text>
+        <text x="135" y="308" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">ExpressRoute / VPN Gateway</text>
+
+        <!-- Fabric side boxes -->
+        <rect x="310" y="70" width="180" height="50" rx="8" fill="var(--bg-card)" stroke="var(--accent-blue)"/>
+        <text x="400" y="92" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Fabric Workspaces</text>
+        <text x="400" y="108" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Lakehouse · Warehouse · PBI</text>
+
+        <rect x="310" y="145" width="180" height="50" rx="8" fill="var(--bg-card)" stroke="var(--accent-cyan)"/>
+        <text x="400" y="167" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Managed VNet</text>
+        <text x="400" y="183" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Spark pools · Controlled egress</text>
+
+        <rect x="310" y="220" width="180" height="50" rx="8" fill="var(--bg-card)" stroke="var(--accent-orange)"/>
+        <text x="400" y="242" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Managed Private EP</text>
+        <text x="400" y="258" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Outbound to data sources</text>
+
+        <rect x="310" y="295" width="180" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="400" y="317" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">VNet Data Gateway</text>
+        <text x="400" y="333" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Bridge to on-prem / VNet</text>
+
+        <!-- Data source boxes -->
+        <rect x="565" y="70" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="665" y="92" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Azure Data Lake (ADLS)</text>
+        <text x="665" y="108" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Firewall: Allow trusted services</text>
+
+        <rect x="565" y="145" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="665" y="167" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Azure SQL / Synapse</text>
+        <text x="665" y="183" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Private endpoint approved</text>
+
+        <rect x="565" y="220" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="665" y="242" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Azure Key Vault</text>
+        <text x="665" y="258" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">Secrets & certificates</text>
+
+        <rect x="565" y="295" width="200" height="50" rx="8" fill="var(--bg-card)" stroke="var(--border-color)"/>
+        <text x="665" y="317" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600" font-family="var(--font-sans)">Cosmos DB / Other PaaS</text>
+        <text x="665" y="333" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">MPE-supported resources</text>
+
+        <!-- Connection arrows -->
+        <line x1="235" y1="225" x2="310" y2="95" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrow-net-blue)"/>
+        <line x1="235" y1="295" x2="310" y2="320" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-net-gray)"/>
+        <line x1="490" y1="245" x2="565" y2="95" stroke="var(--accent-orange)" stroke-width="2" marker-end="url(#arrow-net-orange)"/>
+        <line x1="490" y1="245" x2="565" y2="170" stroke="var(--accent-orange)" stroke-width="2" marker-end="url(#arrow-net-orange)"/>
+        <line x1="490" y1="245" x2="565" y2="245" stroke="var(--accent-orange)" stroke-width="2" marker-end="url(#arrow-net-orange)"/>
+        <line x1="490" y1="245" x2="565" y2="320" stroke="var(--accent-orange)" stroke-width="2" marker-end="url(#arrow-net-orange)"/>
+
+        <!-- Arrow markers -->
+        <defs>
+          <marker id="arrow-net-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--accent-blue)"/></marker>
+          <marker id="arrow-net-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--accent-orange)"/></marker>
+          <marker id="arrow-net-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--text-muted)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/fabric/security/security-overview" target="_blank">Fabric Security Overview ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Private Link ======== -->
+  <section class="section" id="private-link">
+    <div class="section-header">
+      <div class="section-number">Inbound</div>
+      <h2>Private Link for Fabric</h2>
+      <p class="section-subtitle">Route all user and application traffic to Fabric through Azure Private Link — keeping it off the public internet entirely.</p>
+    </div>
+
+    <h3>How it works</h3>
+    <ol style="margin: 16px 0 24px 20px; line-height: 2;">
+      <li><strong>Create a Private Endpoint</strong> in your VNet targeting the <code>Microsoft.PowerBI/privateLinkServicesForPowerBI</code> resource provider</li>
+      <li><strong>Configure Private DNS Zones</strong> — resolve <code>*.analysis.windows.net</code>, <code>*.pbidedicated.windows.net</code>, and <code>*.app.powerbi.com</code> to private IPs</li>
+      <li><strong>Block public access</strong> — In the Fabric Admin Portal → Tenant Settings, disable "Azure Private Link" toggle to block public access at tenant level</li>
+      <li><strong>Test connectivity</strong> — Use <code>nslookup</code> or <code>Resolve-DnsName</code> from within the VNet to confirm private resolution</li>
+    </ol>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ DNS is critical</div>
+      <p>Misconfigured DNS is the #1 cause of Private Link failures. Every client (including on-premises via VPN/ExpressRoute) must resolve Fabric endpoints to their private IP. Use Azure Private DNS Zones linked to the VNet, and configure DNS forwarders for on-premises clients.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span>PowerShell — Verify private DNS resolution</span><button class="code-copy-btn" aria-label="Copy code to clipboard" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button></div>
+      <pre><code># From a VM inside the VNet
+Resolve-DnsName "yourworkspace.analysis.windows.net"
+# Should return a private IP (10.x.x.x), NOT a public IP
+
+# Verify from on-premises (must have DNS forwarder)
+nslookup yourworkspace.analysis.windows.net</code></pre>
+    </div>
+
+    <h3 style="margin-top: 32px;">Requirements & Limitations</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Aspect</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SKU requirement</td><td>F64 or higher capacity (or Power BI Premium P1+)</td></tr>
+          <tr><td>Tenant scope</td><td>Private Link applies to the <strong>entire tenant</strong> — once enabled with public access blocked, all users must connect via private endpoints</td></tr>
+          <tr><td>DNS zones needed</td><td><code>privatelink.analysis.windows.net</code>, <code>privatelink.pbidedicated.windows.net</code>, <code>privatelink.app.powerbi.com</code></td></tr>
+          <tr><td>On-premises access</td><td>Requires ExpressRoute or VPN + DNS forwarders pointing to Azure Private DNS</td></tr>
+          <tr><td>Not supported</td><td>Publish to Web, email subscriptions to external users, some third-party embedding scenarios</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/fabric/security/security-private-links-overview" target="_blank">Private Links Overview ↗</a>
+      <a href="https://techcommunity.microsoft.com/blog/azureinfrastructureblog/enabling-private-connectivity-for-microsoft-fabric-a-practical-guide/4471190" target="_blank">Private Connectivity Guide ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Managed Private Endpoints ======== -->
+  <section class="section" id="managed-pe">
+    <div class="section-header">
+      <div class="section-number">Outbound</div>
+      <h2>Managed Private Endpoints (MPE)</h2>
+      <p class="section-subtitle">Secure outbound connections from Fabric to your private data sources — without exposing them to the public internet.</p>
+    </div>
+
+    <h3>What are Managed Private Endpoints?</h3>
+    <p>When Fabric needs to read from resources that have public access disabled (like ADLS behind a firewall), you create a <strong>Managed Private Endpoint</strong> from the Fabric workspace. Fabric creates a private endpoint inside its managed VNet, and you approve it in the Azure Portal on the target resource.</p>
+
+    <h3 style="margin-top: 24px;">Setup Steps</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 16px;">
+      <div class="card">
+        <h4>1. Enable Managed VNet</h4>
+        <p>In Fabric workspace settings, enable <strong>Managed Virtual Network</strong> for Spark workloads. This is a prerequisite for MPE.</p>
+      </div>
+      <div class="card">
+        <h4>2. Create MPE</h4>
+        <p>Workspace Settings → Managed Private Endpoints → <strong>+ New</strong>. Select the target resource type and enter the Azure Resource ID.</p>
+      </div>
+      <div class="card">
+        <h4>3. Approve in Azure</h4>
+        <p>Go to the target resource (e.g., Storage Account) → Networking → Private Endpoint Connections → <strong>Approve</strong> the pending connection.</p>
+      </div>
+      <div class="card">
+        <h4>4. Use in Notebooks</h4>
+        <p>Connect to the resource from Spark notebooks or pipelines. Traffic flows over Azure backbone via the approved private endpoint.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 32px;">Supported Resource Types</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Azure Resource</th><th>Resource Provider</th><th>Sub-resource</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Azure Data Lake Storage (ADLS Gen2)</td><td><code>Microsoft.Storage/storageAccounts</code></td><td><code>dfs</code></td></tr>
+          <tr><td>Azure SQL Database</td><td><code>Microsoft.Sql/servers</code></td><td><code>sqlServer</code></td></tr>
+          <tr><td>Azure Synapse Analytics</td><td><code>Microsoft.Synapse/workspaces</code></td><td><code>Sql, SqlOnDemand, Dev</code></td></tr>
+          <tr><td>Azure Key Vault</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>vault</code></td></tr>
+          <tr><td>Azure Cosmos DB</td><td><code>Microsoft.DocumentDB/databaseAccounts</code></td><td><code>Sql</code></td></tr>
+          <tr><td>Azure Cognitive Services / OpenAI</td><td><code>Microsoft.CognitiveServices/accounts</code></td><td><code>account</code></td></tr>
+          <tr><td>Azure Event Hubs</td><td><code>Microsoft.EventHub/namespaces</code></td><td><code>namespace</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Performance note</div>
+      <p>When Managed VNet is enabled, <strong>Starter Spark pools are not available</strong>. Spark session start-up time increases because pre-warmed clusters cannot be used. Plan for capacity accordingly — use F64+ SKUs and consider keeping sessions alive for iterative development.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/fabric/security/security-managed-private-endpoints-overview" target="_blank">Managed Private Endpoints ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Managed VNets ======== -->
+  <section class="section" id="managed-vnet">
+    <div class="section-header">
+      <div class="section-number">Isolation</div>
+      <h2>Managed Virtual Networks</h2>
+      <p class="section-subtitle">Fabric-managed VNets provide network isolation for Spark workloads with controlled outbound access.</p>
+    </div>
+
+    <h3>How Managed VNets Work</h3>
+    <p>When enabled at the workspace level, Fabric provisions a <strong>Microsoft-managed virtual network</strong> for all Spark compute in that workspace. Outbound traffic is restricted — Spark can only access destinations through approved Managed Private Endpoints or public endpoints you explicitly allow.</p>
+
+    <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-top: 24px;">
+      <div class="card">
+        <h4>✅ What is controlled</h4>
+        <ul>
+          <li>All Spark notebook and pipeline outbound traffic</li>
+          <li>Connections to Azure PaaS resources via MPE</li>
+          <li>Egress to public internet (blocked by default)</li>
+          <li>DNS resolution within the managed VNet</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>⚠️ What is NOT covered</h4>
+        <ul>
+          <li>SQL endpoint (Warehouse, SQL Analytics) — uses separate connectivity</li>
+          <li>Power BI / semantic models — not in managed VNet</li>
+          <li>Data Factory pipelines — use VNet Data Gateways instead</li>
+          <li>KQL / Eventhouse — separate networking model</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box tip" style="margin-top: 24px;">
+      <div class="info-box-title">💡 Best practice</div>
+      <p>Enable Managed VNet on workspaces that process sensitive data via Spark. For workspaces doing only Power BI reporting or SQL queries, it's not needed and avoids the Spark startup penalty.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/fabric/security/security-managed-vnets-fabric-overview" target="_blank">Managed VNets Overview ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: VNet Data Gateways ======== -->
+  <section class="section" id="vnet-gateway">
+    <div class="section-header">
+      <div class="section-number">Hybrid</div>
+      <h2>VNet Data Gateways</h2>
+      <p class="section-subtitle">Connect Fabric to on-premises data sources and VNet-isolated Azure resources without installing software.</p>
+    </div>
+
+    <h3>When to Use</h3>
+    <p>VNet Data Gateways are the recommended approach when you need Fabric to reach resources inside a VNet that aren't accessible through Managed Private Endpoints — for example, on-premises SQL Server via ExpressRoute, or Azure resources in peered VNets.</p>
+
+    <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-top: 16px;">
+      <div class="card">
+        <h4>VNet Data Gateway</h4>
+        <ul>
+          <li>No software to install — fully managed by Microsoft</li>
+          <li>Runs in a delegated subnet in <strong>your</strong> VNet</li>
+          <li>Supports Dataflows Gen2, Semantic Models, Paginated Reports</li>
+          <li>Accesses anything reachable from the subnet (on-prem via peering/ER)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>On-Premises Data Gateway (classic)</h4>
+        <ul>
+          <li>Software installed on a VM or server you manage</li>
+          <li>Required for some legacy connectors</li>
+          <li>Outbound HTTPS — no inbound ports needed</li>
+          <li>Consider only when VNet Data Gateway doesn't support your source</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 32px;">Setup Requirements</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Requirement</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Subnet delegation</td><td>Delegate a subnet to <code>Microsoft.PowerPlatform/vnetaccesslinks</code> — minimum /28 CIDR</td></tr>
+          <tr><td>NSG rules</td><td>The delegated subnet needs outbound HTTPS (443) to Power BI service endpoints</td></tr>
+          <tr><td>VNet peering</td><td>For on-premises access, the VNet must be peered with hub VNet or have ExpressRoute/VPN</td></tr>
+          <tr><td>Capacity</td><td>Requires Fabric F2+ or Power BI Premium capacity</td></tr>
+          <tr><td>Region</td><td>Gateway must be in the same region as the Fabric capacity</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/data-integration/vnet/overview" target="_blank">VNet Data Gateways ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Trusted Workspace Access ======== -->
+  <section class="section" id="trusted-access">
+    <div class="section-header">
+      <div class="section-number">Storage</div>
+      <h2>Trusted Workspace Access</h2>
+      <p class="section-subtitle">Allow Fabric to access firewalled Azure Storage Accounts using workspace identity — no public access or private endpoints required.</p>
+    </div>
+
+    <h3>How it works</h3>
+    <p>Azure Storage firewall can be configured to trust specific <strong>resource instances</strong>. By registering Fabric workspace identities, you allow OneLake shortcuts and Spark to access the storage — even when "Allow public access" is <strong>OFF</strong>.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>Azure CLI — Enable trusted access for a Storage Account</span><button class="code-copy-btn" aria-label="Copy code to clipboard" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button></div>
+      <pre><code># 1. Get the Fabric workspace identity (ARM resource ID)
+#    Found in Workspace Settings → Azure tab
+
+# 2. Add it as a resource instance rule on the Storage Account
+az storage account network-rule add \
+  --account-name mystorageaccount \
+  --resource-group myRG \
+  --resource-id "/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Fabric/workspaces/{workspaceId}" \
+  --tenant-id "{tenantId}"
+
+# 3. Verify the Storage Account firewall settings
+az storage account show --name mystorageaccount \
+  --query "networkRuleSet.resourceAccessRules"</code></pre>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 When to use Trusted Access vs MPE</div>
+      <p><strong>Trusted Workspace Access</strong> is simpler for OneLake shortcuts and basic Spark access to ADLS. <strong>Managed Private Endpoints</strong> are needed for SQL databases, Key Vault, Cosmos DB, and any non-storage resource that requires private connectivity.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/fabric/security/security-trusted-workspace-access" target="_blank">Trusted Workspace Access ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Conditional Access & Tenant Policies ======== -->
+  <section class="section" id="conditional-access">
+    <div class="section-header">
+      <div class="section-number">Identity</div>
+      <h2>Conditional Access & Tenant Policies</h2>
+      <p class="section-subtitle">Use Entra ID Conditional Access and Fabric Tenant Settings to enforce who, from where, and how users access Fabric.</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 16px;">
+      <div class="card">
+        <h4>📍 Location-Based Policies</h4>
+        <ul>
+          <li>Block access from non-corporate IP ranges</li>
+          <li>Require VPN/Private Link for sensitive workspaces</li>
+          <li>Geo-fence to specific countries</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>📱 Device Compliance</h4>
+        <ul>
+          <li>Require Intune-compliant or Hybrid AD-joined devices</li>
+          <li>Block access from unmanaged/personal devices</li>
+          <li>Enforce app protection policies on mobile</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔑 Authentication Strength</h4>
+        <ul>
+          <li>Require phishing-resistant MFA (FIDO2, Windows Hello)</li>
+          <li>Step-up authentication for admin operations</li>
+          <li>Session controls (sign-in frequency, persistent browser)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🚫 Tenant Restrictions</h4>
+        <ul>
+          <li>Prevent users from accessing other organizations' Fabric tenants</li>
+          <li>Block guest access to sensitive workspaces</li>
+          <li>External sharing policies per workspace</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box important" style="margin-top: 24px;">
+      <div class="info-box-title">🎯 Recommended baseline</div>
+      <p>At minimum, configure: <strong>(1)</strong> Require MFA for all Fabric users, <strong>(2)</strong> Block access from non-compliant devices, <strong>(3)</strong> Restrict admin portal access to named locations. These three policies prevent the majority of identity-based attacks.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-conditional-access-cloud-apps" target="_blank">Conditional Access for SaaS ↗</a>
+    </div>
+  </section>
+
+  <!-- ======== Section: Network Decision Matrix ======== -->
+  <section class="section" id="decision-matrix">
+    <div class="section-header">
+      <div class="section-number">Decision Guide</div>
+      <h2>Networking Decision Matrix</h2>
+      <p class="section-subtitle">Choose the right networking approach based on your security requirements and workload type.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Recommended Approach</th>
+            <th>SKU Minimum</th>
+            <th>Complexity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Users access Fabric from corporate network only</td>
+            <td><strong>Private Link</strong> + block public access</td>
+            <td>F64</td>
+            <td>🟡 Medium</td>
+          </tr>
+          <tr>
+            <td>Spark reads from firewalled ADLS</td>
+            <td><strong>Managed Private Endpoints</strong> (MPE)</td>
+            <td>F64</td>
+            <td>🟡 Medium</td>
+          </tr>
+          <tr>
+            <td>OneLake shortcuts to firewalled storage</td>
+            <td><strong>Trusted Workspace Access</strong></td>
+            <td>F2</td>
+            <td>🟢 Low</td>
+          </tr>
+          <tr>
+            <td>Dataflows connecting to on-premises SQL</td>
+            <td><strong>VNet Data Gateway</strong></td>
+            <td>F2</td>
+            <td>🟡 Medium</td>
+          </tr>
+          <tr>
+            <td>Full zero-trust (all traffic private)</td>
+            <td><strong>Private Link + MPE + Managed VNet + CA</strong></td>
+            <td>F64</td>
+            <td>🔴 High</td>
+          </tr>
+          <tr>
+            <td>Development / non-sensitive workloads</td>
+            <td><strong>Public endpoints</strong> + Conditional Access + MFA</td>
+            <td>F2</td>
+            <td>🟢 Low</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Fabric Security Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/connectivity-overview" target="_blank">Connectivity Overview ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="governance.html">Governance & Security →</a>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('networking');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Practices — Microsoft Fabric Guide</title>
+  <meta name="description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <meta property="og:title" content="Best Practices — Microsoft Fabric Guide">
+  <meta property="og:description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/best-practices">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Best Practices — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">Data Engineer</span> <span class="tag tag-orange">BI Developer</span> <span class="tag tag-green">Analytics Engineer</span> — This section covers lakehouse vs. warehouse decisions, Spark optimization, notebook patterns, real-time streaming with Eventhouse, and Power BI Direct Lake integration.</p>
+  </div>
+
+  <!-- ===============================================
+       SECTION 9: Data Engineering Best Practices
+       =============================================== -->
+  <section id="engineering" class="section" data-roles="data-engineer,data-architect,data-scientist">
+    <div class="section-header">
+      <div class="section-number">Engineering</div>
+      <h2>Data Engineering Best Practices</h2>
+      <p class="section-subtitle">Practical guidance for building efficient, maintainable data pipelines in Fabric.</p>
+    </div>
+
+    <h3>Lakehouse vs. Warehouse</h3>
+    <p>Fabric offers two primary storage artifacts. Choose based on your workload:</p>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Feature</th><th>Lakehouse</th><th>Warehouse</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Primary language</strong></td><td>PySpark, Spark SQL</td><td>T-SQL</td></tr>
+          <tr><td><strong>Data format</strong></td><td>Delta (open format in OneLake)</td><td>Proprietary columnar</td></tr>
+          <tr><td><strong>Schema</strong></td><td>Schema-on-read + schema-on-write</td><td>Schema-on-write only</td></tr>
+          <tr><td><strong>Best for</strong></td><td>Data engineering, ML, unstructured data</td><td>BI, structured queries, stored procedures</td></tr>
+          <tr><td><strong>SQL access</strong></td><td>Read-only SQL endpoint (auto-generated)</td><td>Full T-SQL read/write</td></tr>
+          <tr><td><strong>Multi-engine</strong></td><td>Spark + SQL + Power BI</td><td>SQL + Power BI</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Recommendation</div>
+      <p>Use <strong>Lakehouse for ingestion and transformation</strong> (Bronze/Silver layers) and <strong>Warehouse for the Gold/consumption layer</strong> if your consumers prefer T-SQL. Or use Lakehouse for all layers if your team is Spark-first.</p>
+    </div>
+
+    <h3>Notebook Best Practices</h3>
+    <ul>
+      <li><strong>Parameterize notebooks:</strong> Use Fabric's built-in parameters for environment-specific values (file paths, dates, flags)</li>
+      <li><strong>Modular design:</strong> Break complex logic into reusable functions or separate notebooks using <code>%run</code></li>
+      <li><strong>Error handling:</strong> Use try/catch blocks and log errors to a monitoring table</li>
+      <li><strong>Avoid hardcoded paths:</strong> Use relative paths within OneLake or parameterized paths</li>
+      <li><strong>Version control:</strong> Connect notebooks to Git for versioning and code review</li>
+    </ul>
+
+    <h3>Spark Optimization</h3>
+    <ul>
+      <li><strong>V-Order optimization:</strong> Enable V-Order (a Fabric-native columnar sort optimization) for write-optimized Delta tables — significantly faster reads for Power BI and SQL</li>
+      <li><strong>Optimize file sizes:</strong> Target 128 MB – 1 GB files. Use <code>OPTIMIZE</code> (bin-compaction) to merge small files</li>
+      <li><strong>Partition wisely:</strong> Partition by high-cardinality columns used in filters (e.g., <code>year</code>, <code>region</code>). Avoid over-partitioning</li>
+      <li><strong>Use Delta caching:</strong> SSD caching for repeated reads on the same data</li>
+      <li><strong>Right-size sessions:</strong> Don't default to large Spark clusters — start small and scale up based on the Spark UI metrics</li>
+    </ul>
+
+    <h3>File Format Guidance</h3>
+    <div class="code-block">
+      <div class="code-header"><span>Recommended formats in Fabric</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>✅ Delta (Parquet + transaction log)  — Default for all Fabric tables
+✅ Parquet                             — Good for external/read-only data
+⚠️  CSV                                — Only for Bronze ingestion, convert to Delta ASAP
+❌ JSON (nested)                       — Flatten before storing in tables
+❌ Excel/XML                           — Convert during ingestion pipeline</pre>
+    </div>
+
+    <h3>Shortcuts Strategy</h3>
+    <p><strong>Shortcuts</strong> are pointers to data in external locations — they appear as folders in your lakehouse but don't copy data. Use them to:</p>
+    <ul>
+      <li>Access data in <strong>other lakehouses</strong> or workspaces without duplication</li>
+      <li>Connect to <strong>external ADLS Gen2</strong>, <strong>AWS S3</strong>, or <strong>Google Cloud Storage</strong></li>
+      <li>Enable <strong>cross-domain data sharing</strong> without moving data</li>
+      <li>Create a <strong>virtual data mesh</strong> where each domain manages its data but shares via shortcuts</li>
+    </ul>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/data-engineering/lakehouse-overview" target="_blank">Lakehouse Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-engineering/spark-compute" target="_blank">Spark Compute ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-engineering/delta-optimization-and-v-order" target="_blank">Delta Optimization & V-Order ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-engineering/author-notebook-with-vs-code" target="_blank">Notebooks with VS Code ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-warehouse/data-warehousing" target="_blank">Data Warehousing ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="architecture.html">Architecture — Core Concepts →</a>
+      <a href="operations.html">Operations — CI/CD & Deployment →</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION 10: Real-Time Analytics
+       =============================================== -->
+  <section id="realtime" class="section" data-roles="data-engineer,bi-developer,data-scientist">
+    <div class="section-header">
+      <div class="section-number">Real-Time</div>
+      <h2>Real-Time Analytics</h2>
+      <p class="section-subtitle">Streaming data ingestion and time-series analytics with Real-Time Intelligence.</p>
+    </div>
+
+    <h3>Overview</h3>
+    <p>Fabric's <strong>Real-Time Intelligence</strong> experience is designed for high-volume streaming and time-series data. It's powered by the same engine behind Azure Data Explorer (Kusto) and provides sub-second query latency on billions of records.</p>
+
+    <h3>Key Components</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Eventhouse</h4>
+        <p>The database container for real-time data. Stores data in a highly compressed columnar format optimized for time-series queries.</p>
+      </div>
+      <div class="card">
+        <h4>KQL Database</h4>
+        <p>Individual databases within an Eventhouse. Query data using <strong>Kusto Query Language (KQL)</strong> — a powerful language for log and time-series analytics.</p>
+      </div>
+      <div class="card">
+        <h4>Eventstreams</h4>
+        <p>Capture, transform, and route real-time events from sources like Azure Event Hubs, IoT Hub, Kafka, and custom apps.</p>
+      </div>
+      <div class="card">
+        <h4>Real-Time Dashboards</h4>
+        <p>Build live dashboards with auto-refresh that query Eventhouse data directly. Ideal for operational monitoring.</p>
+      </div>
+    </div>
+
+    <h3>Streaming Ingestion Patterns</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Source</th><th>Ingestion Method</th><th>Latency</th></tr></thead>
+        <tbody>
+          <tr><td>Azure Event Hubs</td><td>Eventstream → KQL Database</td><td>Seconds</td></tr>
+          <tr><td>Azure IoT Hub</td><td>Eventstream → KQL Database</td><td>Seconds</td></tr>
+          <tr><td>Apache Kafka</td><td>Kafka connector → Eventstream</td><td>Seconds</td></tr>
+          <tr><td>Custom apps</td><td>REST API / SDK ingestion</td><td>Seconds</td></tr>
+          <tr><td>Databases (CDC)</td><td>Fabric Mirroring → OneLake</td><td>Minutes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>When to Use Real-Time vs. Batch</h3>
+    <ul>
+      <li><strong>Real-Time Intelligence:</strong> IoT telemetry, application logs, clickstream analytics, fraud detection, operational monitoring</li>
+      <li><strong>Batch (Lakehouse/Warehouse):</strong> Historical reporting, data warehousing, regulatory reporting, large-scale transformations</li>
+      <li><strong>Hybrid:</strong> Ingest in real-time to Eventhouse for operational use, then copy to Lakehouse for long-term analytics</li>
+    </ul>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use <strong>Eventhouse for hot data</strong> (last 30 days) and <strong>OneLake for warm/cold data</strong> (historical). Set up retention policies in your KQL Database to automatically move aging data.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/real-time-intelligence/overview" target="_blank">Real-Time Intelligence ↗</a>
+      <a href="https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/overview" target="_blank">Eventstreams ↗</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       SECTION 11: Power BI Integration
+       =============================================== -->
+  <section id="powerbi" class="section" data-roles="bi-developer,business-leader,data-architect">
+    <div class="section-header">
+      <div class="section-number">Analytics</div>
+      <h2>Power BI Integration</h2>
+      <p class="section-subtitle">Maximizing the reporting and analytics experience with Fabric-native Power BI features.</p>
+    </div>
+
+    <h3>Direct Lake Mode</h3>
+    <p><strong>Direct Lake</strong> is a game-changing connectivity mode exclusive to Fabric. It combines the performance of Import mode with the freshness of DirectQuery — without copying data into the semantic model.</p>
+    <ul>
+      <li>Reads data <strong>directly from Delta tables</strong> in OneLake</li>
+      <li>No data refresh needed — reports always show the latest data</li>
+      <li>Performance comparable to Import mode for most scenarios</li>
+      <li>Falls back to DirectQuery if data exceeds memory (configurable behavior)</li>
+    </ul>
+
+    <div class="info-box important">
+      <div class="info-box-title">💡 Key Insight</div>
+      <p>Direct Lake works best when your Gold-layer tables are <strong>V-Order optimized</strong> and <strong>properly sized</strong> (avoid millions of tiny files). Run <code>OPTIMIZE</code> and enable V-Order on your Gold tables for best Direct Lake performance.</p>
+    </div>
+
+    <h3>Semantic Model Best Practices</h3>
+    <ul>
+      <li>Build <strong>star schemas</strong> in your Gold layer — separate facts and dimensions</li>
+      <li>Use <strong>surrogate keys</strong> (integer) instead of natural keys for relationships</li>
+      <li>Minimize calculated columns — push computations to the Lakehouse/Warehouse layer</li>
+      <li>Use <strong>calculation groups</strong> for reusable time intelligence (YTD, MTD, YoY)</li>
+      <li>Enable <strong>automatic aggregations</strong> for large tables to speed up high-level queries</li>
+    </ul>
+
+    <h3>Report Governance</h3>
+    <ul>
+      <li><strong>Centralize semantic models:</strong> Create shared models that multiple reports connect to (avoid dataset proliferation)</li>
+      <li><strong>Use endorsement:</strong> Certify production-ready models and promote development models</li>
+      <li><strong>Apply RLS:</strong> Configure row-level security on semantic models for multi-tenant reports</li>
+      <li><strong>Monitor usage:</strong> Use the <a href="https://learn.microsoft.com/power-bi/admin/service-usage-metrics" class="ext-link" target="_blank" rel="noopener">usage metrics</a> to track report adoption</li>
+    </ul>
+
+    <h3>Performance Optimization</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Technique</th><th>Impact</th><th>Effort</th></tr></thead>
+        <tbody>
+          <tr><td>V-Order on Delta tables</td><td>🟢 High</td><td>Low</td></tr>
+          <tr><td>Star schema design</td><td>🟢 High</td><td>Medium</td></tr>
+          <tr><td>Reduce cardinality of columns</td><td>🟢 High</td><td>Low</td></tr>
+          <tr><td>Use aggregation tables</td><td>🟡 Medium</td><td>Medium</td></tr>
+          <tr><td>Optimize DAX measures</td><td>🟡 Medium</td><td>Varies</td></tr>
+          <tr><td>Composite models</td><td>🟡 Medium</td><td>Medium</td></tr>
+          <tr><td>Paginated reports for large exports</td><td>🟡 Medium</td><td>Low</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/power-bi/enterprise/directlake-overview" target="_blank">Direct Lake Mode ↗</a>
+      <a href="https://learn.microsoft.com/power-bi/guidance/star-schema" target="_blank">Star Schema Design ↗</a>
+    </div>
+
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('best-practices');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+</body>
+</html>
