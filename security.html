@@ -20,24 +20,51 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
   <style>
-    /* Defense-in-depth interactive layer diagram */
-    .security-layers { display:flex; flex-direction:column; align-items:center; gap:0; margin:32px auto; max-width:700px; }
-    .security-layer { width:100%; text-align:center; padding:16px 24px; border-radius:12px; cursor:pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration:none; display:block; position:relative; }
-    .security-layer:hover { transform:scale(1.03); box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index:1; }
-    .security-layer .layer-num { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:2px; }
-    .security-layer .layer-title { font-size:16px; font-weight:700; }
-    .security-layer .layer-desc { font-size:12px; opacity:0.8; margin-top:2px; }
-    .security-layer.l-identity { background: var(--accent-blue); color:#fff; }
-    .security-layer.l-workspace { background: var(--accent-cyan); color:#fff; }
-    .security-layer.l-item { background: var(--accent-orange); color:#fff; }
-    .security-layer.l-data { background: var(--accent-purple); color:#fff; }
-    .security-layer.l-onelake { background: var(--accent-green); color:#fff; }
-    .security-layer.l-info { background: var(--accent-red); color:#fff; }
-    .security-layer.l-network { background: var(--text-secondary); color:#fff; }
-    .security-layer.l-monitor { background: var(--text-muted); color:#fff; }
-    .security-layer .layer-desc { opacity:0.9; }
-    .layer-connector { width:2px; height:12px; background:var(--border-color); margin:0 auto; }
-    [data-theme="dark"] .security-layer:hover { box-shadow: 0 4px 16px rgba(255,255,255,0.08); }
+    /* Defense-in-depth timeline diagram */
+    .security-timeline { position:relative; max-width:800px; margin:40px auto; padding:0 20px; }
+    .security-timeline::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:3px; background: linear-gradient(180deg, var(--accent-blue), var(--accent-cyan), var(--accent-purple), var(--accent-green), var(--accent-red)); border-radius:2px; transform:translateX(-50%); }
+    .sec-layer-card { display:flex; align-items:center; gap:0; margin-bottom:20px; position:relative; text-decoration:none; color:inherit; }
+    .sec-layer-card:nth-child(odd) { flex-direction:row-reverse; }
+    .sec-layer-card:nth-child(odd) .sec-layer-content { text-align:right; margin-right:36px; margin-left:0; }
+    .sec-layer-card:nth-child(even) .sec-layer-content { text-align:left; margin-left:36px; margin-right:0; }
+    .sec-layer-content { flex:1; background:var(--bg-secondary); border-radius:12px; padding:18px 22px; transition: transform 0.2s, box-shadow 0.2s; border:1px solid var(--border-color); }
+    .sec-layer-card:hover .sec-layer-content { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    [data-theme="dark"] .sec-layer-card:hover .sec-layer-content { box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+    .sec-layer-badge { position:absolute; left:50%; transform:translateX(-50%); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; z-index:2; border:3px solid var(--bg-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink:0; }
+    .sec-layer-num { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:2px; }
+    .sec-layer-title { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .sec-layer-desc { font-size:12px; color:var(--text-muted); margin-top:3px; line-height:1.4; }
+    .sec-layer-card.l-identity .sec-layer-badge { background:var(--accent-blue); }
+    .sec-layer-card.l-identity .sec-layer-num { color:var(--accent-blue); }
+    .sec-layer-card.l-identity .sec-layer-content { border-top:3px solid var(--accent-blue); }
+    .sec-layer-card.l-workspace .sec-layer-badge { background:var(--accent-cyan); }
+    .sec-layer-card.l-workspace .sec-layer-num { color:var(--accent-cyan); }
+    .sec-layer-card.l-workspace .sec-layer-content { border-top:3px solid var(--accent-cyan); }
+    .sec-layer-card.l-item .sec-layer-badge { background:var(--accent-orange); }
+    .sec-layer-card.l-item .sec-layer-num { color:var(--accent-orange); }
+    .sec-layer-card.l-item .sec-layer-content { border-top:3px solid var(--accent-orange); }
+    .sec-layer-card.l-data .sec-layer-badge { background:var(--accent-purple); }
+    .sec-layer-card.l-data .sec-layer-num { color:var(--accent-purple); }
+    .sec-layer-card.l-data .sec-layer-content { border-top:3px solid var(--accent-purple); }
+    .sec-layer-card.l-onelake .sec-layer-badge { background:var(--accent-green); }
+    .sec-layer-card.l-onelake .sec-layer-num { color:var(--accent-green); }
+    .sec-layer-card.l-onelake .sec-layer-content { border-top:3px solid var(--accent-green); }
+    .sec-layer-card.l-info .sec-layer-badge { background:var(--accent-red); }
+    .sec-layer-card.l-info .sec-layer-num { color:var(--accent-red); }
+    .sec-layer-card.l-info .sec-layer-content { border-top:3px solid var(--accent-red); }
+    .sec-layer-card.l-network .sec-layer-badge { background:var(--accent-cyan); }
+    .sec-layer-card.l-network .sec-layer-num { color:var(--accent-cyan); }
+    .sec-layer-card.l-network .sec-layer-content { border-top:3px solid var(--accent-cyan); }
+    .sec-layer-card.l-monitor .sec-layer-badge { background:var(--accent-purple); }
+    .sec-layer-card.l-monitor .sec-layer-num { color:var(--accent-purple); }
+    .sec-layer-card.l-monitor .sec-layer-content { border-top:3px solid var(--accent-purple); }
+    @media (max-width:768px) {
+      .security-timeline::before { left:22px; }
+      .sec-layer-card, .sec-layer-card:nth-child(odd) { flex-direction:row; }
+      .sec-layer-card:nth-child(odd) .sec-layer-content,
+      .sec-layer-card:nth-child(even) .sec-layer-content { text-align:left; margin-left:36px; margin-right:0; }
+      .sec-layer-badge { left:22px; }
+    }
 
     /* Security checklist styles */
     .security-check-group { margin-bottom:24px; }
@@ -70,54 +97,72 @@
       <p class="section-subtitle">Microsoft Fabric implements a layered security approach — every layer adds protection so that no single breach compromises your entire estate. Click any layer to jump to its section.</p>
     </div>
 
-    <div class="security-layers">
-      <a href="#identity" class="security-layer l-identity">
-        <div class="layer-num">Layer 1</div>
-        <div class="layer-title">🔐 Identity &amp; Access Management</div>
-        <div class="layer-desc">Entra ID · Conditional Access · MFA · Service Principals · Managed Identities</div>
+    <div class="security-timeline">
+      <a href="#identity" class="sec-layer-card l-identity">
+        <div class="sec-layer-badge">🔐</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 1</div>
+          <div class="sec-layer-title">Identity &amp; Access Management</div>
+          <div class="sec-layer-desc">Entra ID · Conditional Access · MFA · Service Principals · Managed Identities</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#workspace" class="security-layer l-workspace">
-        <div class="layer-num">Layer 2</div>
-        <div class="layer-title">🏢 Workspace Security</div>
-        <div class="layer-desc">Roles · Isolation · Domains · Capacity Boundaries</div>
+      <a href="#workspace" class="sec-layer-card l-workspace">
+        <div class="sec-layer-badge">🏢</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 2</div>
+          <div class="sec-layer-title">Workspace Security</div>
+          <div class="sec-layer-desc">Roles · Isolation · Domains · Capacity Boundaries</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#item-security" class="security-layer l-item">
-        <div class="layer-num">Layer 3</div>
-        <div class="layer-title">📦 Item-Level Permissions</div>
-        <div class="layer-desc">Sharing · App Distribution · Endorsement · Per-Item Access</div>
+      <a href="#item-security" class="sec-layer-card l-item">
+        <div class="sec-layer-badge">📦</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 3</div>
+          <div class="sec-layer-title">Item-Level Permissions</div>
+          <div class="sec-layer-desc">Sharing · App Distribution · Endorsement · Per-Item Access</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#data-security" class="security-layer l-data">
-        <div class="layer-num">Layer 4</div>
-        <div class="layer-title">🛡️ Data-Level Security</div>
-        <div class="layer-desc">RLS · CLS · OLS · Dynamic Data Masking</div>
+      <a href="#data-security" class="sec-layer-card l-data">
+        <div class="sec-layer-badge">🛡️</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 4</div>
+          <div class="sec-layer-title">Data-Level Security</div>
+          <div class="sec-layer-desc">RLS · CLS · OLS · Dynamic Data Masking</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#onelake-security" class="security-layer l-onelake">
-        <div class="layer-num">Layer 5</div>
-        <div class="layer-title">💾 OneLake Security</div>
-        <div class="layer-desc">Data Access Roles · Folder-Level RBAC · Cross-Engine Enforcement</div>
+      <a href="#onelake-security" class="sec-layer-card l-onelake">
+        <div class="sec-layer-badge">💾</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 5</div>
+          <div class="sec-layer-title">OneLake Security</div>
+          <div class="sec-layer-desc">Data Access Roles · Folder-Level RBAC · Cross-Engine Enforcement</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#info-protection" class="security-layer l-info">
-        <div class="layer-num">Layer 6</div>
-        <div class="layer-title">🏷️ Information Protection</div>
-        <div class="layer-desc">Sensitivity Labels · DLP Policies · Purview · AI Data Boundaries</div>
+      <a href="#info-protection" class="sec-layer-card l-info">
+        <div class="sec-layer-badge">🏷️</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 6</div>
+          <div class="sec-layer-title">Information Protection</div>
+          <div class="sec-layer-desc">Sensitivity Labels · DLP Policies · Purview · AI Data Boundaries</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#network-security" class="security-layer l-network">
-        <div class="layer-num">Layer 7</div>
-        <div class="layer-title">🌐 Network Security</div>
-        <div class="layer-desc">Private Link · Managed VNet · Trusted Workspace Access · Zero-Trust</div>
+      <a href="#network-security" class="sec-layer-card l-network">
+        <div class="sec-layer-badge">🌐</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 7</div>
+          <div class="sec-layer-title">Network Security</div>
+          <div class="sec-layer-desc">Private Link · Managed VNet · Trusted Workspace Access · Zero-Trust</div>
+        </div>
       </a>
-      <div class="layer-connector"></div>
-      <a href="#monitoring" class="security-layer l-monitor">
-        <div class="layer-num">Layer 8</div>
-        <div class="layer-title">📊 Monitoring &amp; Audit</div>
-        <div class="layer-desc">Audit Logs · Defender for Cloud Apps · Admin Portal · SIEM</div>
+      <a href="#monitoring" class="sec-layer-card l-monitor">
+        <div class="sec-layer-badge">📊</div>
+        <div class="sec-layer-content">
+          <div class="sec-layer-num">Layer 8</div>
+          <div class="sec-layer-title">Monitoring &amp; Audit</div>
+          <div class="sec-layer-desc">Audit Logs · Defender for Cloud Apps · Admin Portal · SIEM</div>
+        </div>
       </a>
+    </div>
     </div>
 
     <div class="info-box tip">
