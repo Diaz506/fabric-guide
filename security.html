@@ -460,9 +460,9 @@ GRANT SELECT ON dbo.Employees(EmployeeId, Name, Department) TO [LimitedAccess];<
     </ul>
 
     <h3>Dynamic Data Masking (DDM)</h3>
-    <p>DDM masks sensitive data in query results <strong>without changing the stored data</strong>. Non-privileged users see masked values; privileged users see the original.</p>
+    <p>DDM masks sensitive data in query results <strong>without changing the stored data</strong>. Non-privileged users see masked values; privileged users see the original. Available in both <strong>Fabric Warehouse</strong> and <strong>Lakehouse SQL analytics endpoint</strong>.</p>
     <div class="code-block">
-      <div class="code-header"><span>T-SQL — Dynamic Data Masking in Warehouse</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <div class="code-header"><span>T-SQL — Dynamic Data Masking in Warehouse / Lakehouse SQL Endpoint</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
       <pre>-- Mask email column with partial masking
 ALTER TABLE dbo.Customers
 ALTER COLUMN Email ADD MASKED WITH (FUNCTION = 'email()');
@@ -492,7 +492,7 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
           <tr><td>Users see only their own rows</td><td><strong>RLS</strong></td><td>Warehouse, Semantic Model</td><td>No</td></tr>
           <tr><td>Hide specific columns from a role</td><td><strong>CLS</strong></td><td>Warehouse</td><td>No (error on access)</td></tr>
           <tr><td>Hide tables/columns from field lists</td><td><strong>OLS</strong></td><td>Semantic Model (Tabular Editor)</td><td>Yes</td></tr>
-          <tr><td>Show masked values (e.g., XXX-XX-1234)</td><td><strong>DDM</strong></td><td>Warehouse</td><td>No (shows masked)</td></tr>
+          <tr><td>Show masked values (e.g., XXX-XX-1234)</td><td><strong>DDM</strong></td><td>Warehouse, Lakehouse SQL Endpoint</td><td>No (shows masked)</td></tr>
           <tr><td>Restrict access to lakehouse folders</td><td><strong>OneLake RBAC</strong></td><td>OneLake</td><td>Yes</td></tr>
         </tbody>
       </table>
@@ -518,8 +518,8 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
     </div>
 
     <div class="info-box tip">
-      <div class="info-box-title">🆕 What's New</div>
-      <p>OneLake data access roles provide <strong>folder-level and table-level RBAC</strong> directly in OneLake. Security is enforced at the storage layer across <strong>all supported compute engines</strong> — including Spark, SQL endpoint, and Power BI Direct Lake. <strong>Note:</strong> This feature is in <strong>public preview</strong> — supported items and engine coverage are expanding. Check the latest docs for current availability.</p>
+      <div class="info-box-title">🆕 Generally Available</div>
+      <p>OneLake data access roles provide <strong>folder-level and table-level RBAC</strong> directly in OneLake. Security is enforced at the storage layer across <strong>all compute engines</strong> — including Spark, SQL endpoint, and Power BI Direct Lake. This feature is now <strong>generally available (GA)</strong> as of early 2026, with unified enforcement across the Fabric platform.</p>
     </div>
 
     <h3>How OneLake Data Access Roles Work</h3>
@@ -550,7 +550,6 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
           <li>SQL analytics endpoint respects table restrictions</li>
           <li>Power BI Direct Lake respects the same boundaries</li>
           <li>OneLake file explorer and APIs also enforce roles</li>
-          <li><strong>Preview:</strong> Coverage is expanding — verify support for your specific item types</li>
         </ul>
       </div>
     </div>
@@ -601,7 +600,7 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
 
       <!-- Enforcement label -->
       <rect x="180" y="220" width="340" height="24" rx="6" fill="var(--accent-blue)" opacity="0.15"/>
-      <text x="350" y="237" text-anchor="middle" fill="var(--accent-blue)" font-size="11" font-weight="700" font-family="var(--font-sans)">🛡️ Security enforced at storage layer for supported items (preview)</text>
+      <text x="350" y="237" text-anchor="middle" fill="var(--accent-blue)" font-size="11" font-weight="700" font-family="var(--font-sans)">🛡️ Security enforced at storage layer across all compute engines (GA)</text>
     </svg>
 
     <h3>Key Limitations &amp; Considerations</h3>
@@ -610,10 +609,9 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
         <thead><tr><th>Consideration</th><th>Details</th></tr></thead>
         <tbody>
           <tr><td><strong>Applies to Viewer role only</strong></td><td>Workspace Admin, Member, and Contributor roles bypass OneLake RBAC — they always have full data access</td></tr>
-          <tr><td><strong>F SKU required</strong></td><td>OneLake data access roles require Fabric capacity (F SKU), not trial or P SKU</td></tr>
+          <tr><td><strong>F SKU required</strong></td><td>OneLake data access roles require Fabric capacity (F SKU) or Power BI Premium (P SKU)</td></tr>
           <tr><td><strong>Additive permissions</strong></td><td>If a user belongs to multiple roles, they get the <strong>union</strong> of all permissions (most permissive wins)</td></tr>
           <tr><td><strong>No deny rules</strong></td><td>You can't explicitly deny access — only grant. Structure roles carefully to avoid over-permissioning</td></tr>
-          <tr><td><strong>Preview status</strong></td><td>OneLake security is in <strong>public preview</strong> — supported item types (lakehouse, mirrored items) and engine coverage are expanding</td></tr>
         </tbody>
       </table>
     </div>
@@ -666,10 +664,12 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
     <h3>Data Loss Prevention (DLP)</h3>
     <p>DLP policies detect and protect sensitive data in Fabric, preventing accidental exposure or exfiltration.</p>
     <ul>
+      <li><strong>Real-time scanning</strong> — automatically detects sensitive data leaving OneLake or being shared externally</li>
       <li><strong>Policy tips</strong> — show inline warnings when users interact with sensitive data</li>
       <li><strong>Block actions</strong> — prevent sharing, export, or download of highly sensitive items</li>
       <li><strong>Alert admins</strong> — send notifications when DLP rules are triggered</li>
       <li>DLP is <strong>AI-aware</strong> — policies apply to Copilot interactions and AI-generated content</li>
+      <li><strong>ML-based detection</strong> — automatic identification of sensitive content patterns beyond regex rules</li>
     </ul>
 
     <h3>Encryption &amp; Key Management</h3>
@@ -691,7 +691,8 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
       <ul style="margin-top: 8px;">
         <li><strong>Tenant isolation</strong> — Copilot never accesses data from other tenants</li>
         <li><strong>Data boundaries</strong> — data stays within your geographic region for AI processing</li>
-        <li><strong>Purview DSPM for AI</strong> — monitor AI prompts, responses, and flag risky behavior</li>
+        <li><strong>Purview DSPM for AI</strong> — monitor AI prompts, responses, and flag risky behavior with full audit trail</li>
+        <li><strong>Copilot audit logging</strong> — all Copilot queries and data access events are captured in the unified audit log for compliance review</li>
         <li><strong>Labeled data protection</strong> — Copilot won't surface content from "Highly Confidential" items to unauthorized users</li>
       </ul>
     </div>
