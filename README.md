@@ -46,15 +46,23 @@ A comprehensive, interactive documentation site covering architecture, governanc
 ├── best-practices.html     # Engineering best practices
 ├── operations.html         # Operations & costs
 ├── data-mesh.html          # Data mesh architecture
+├── data-integration.html   # Data integration patterns
 ├── fabric-iq.html          # Fabric IQ & AI agents
+├── capacity-planning.html  # Capacity planning guide
 ├── checklist.html          # Getting started checklist
+├── scenarios.html          # Real-world scenarios
+├── useful-links.html       # Curated resource links
+├── whats-new.html          # What's new & updates
+├── playground.html         # Architecture playground (drag & drop)
+├── 404.html                # Custom error page
 ├── staticwebapp.config.json # Azure SWA configuration
 ├── css/
 │   └── styles.css          # All styles (inc. dark mode)
 └── js/
     ├── nav.js              # Shared navigation & sidebar
     ├── main.js             # Core interactions
-    └── features.js         # Interactive features
+    ├── features.js         # Interactive features
+    └── playground.js       # Architecture playground canvas
 ```
 
 ## 🚀 Local Development
@@ -75,6 +83,10 @@ npm install -g @azure/static-web-apps-cli
 swa deploy . --deployment-token "YOUR_TOKEN" --env production
 ```
 
+## 🤝 Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## 📄 License
 
-This project is for internal reference and educational purposes.
+This project is licensed under the [MIT License](LICENSE).

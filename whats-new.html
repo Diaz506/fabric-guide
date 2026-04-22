@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/whats-new">
   <title>What's New — Microsoft Fabric Guide</title>
   <meta name="description" content="Latest Microsoft Fabric blog updates, categorized by workload — Power BI, Data Engineering, Real-Time Intelligence, Fabric IQ, and more.">
   <meta property="og:title" content="What's New — Microsoft Fabric Guide">
@@ -10,7 +11,10 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/whats-new">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="What's New — Microsoft Fabric Guide">
   <meta name="twitter:description" content="Latest Microsoft Fabric blog updates, categorized by workload — Power BI, Data Engineering, Real-Time Intelligence, Fabric IQ, and more.">
   <link rel="stylesheet" href="css/styles.css">
@@ -24,6 +28,194 @@
     <div class="info-box-title">👤 Who is this for?</div>
     <p><span class="tag tag-blue">All Roles</span> — Stay up to date with the latest Microsoft Fabric announcements, feature releases, and blog posts across all workloads.</p>
   </div>
+
+  <section id="fabcon-2026" class="section">
+    <div class="section-header">
+      <div class="section-number">FabCon 2026</div>
+      <h2>FabCon & SQLCon 2026 News</h2>
+      <p class="section-subtitle">Key announcements from the third annual FabCon and first-ever SQLCon in Atlanta — unifying databases and Fabric on a single data platform.</p>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">📅 FabCon & SQLCon 2026 — Atlanta, Georgia</div>
+      <p>Nearly <strong>300 workshops and sessions</strong> across <strong>8,000 attendees</strong>. Microsoft Fabric now serves <strong>31,000+ customers</strong> — the fastest-growing data platform in Microsoft's history. SQL Server 2025 is growing more than 2× faster than the previous version.</p>
+    </div>
+
+    <h3>Major Announcements</h3>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-blue);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="6" width="28" height="24" rx="3"/>
+            <line x1="4" y1="14" x2="32" y2="14"/>
+            <line x1="14" y1="14" x2="14" y2="30"/>
+            <circle cx="23" cy="22" r="4"/>
+            <line x1="26" y1="25" x2="28" y2="27"/>
+          </svg>
+        </div>
+        <h4>Database Hub in Fabric</h4>
+        <p>A unified database management experience bringing Azure SQL, Cosmos DB, PostgreSQL, MySQL, SQL Server (via Arc), and Fabric Databases into a single pane. Features agent-assisted, human-in-the-loop management with Copilot-powered insights.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Unified observability &amp; delegated governance</li>
+          <li>Intelligent agents to surface what changed and guide action</li>
+          <li>New savings plan for databases — up to 35% savings</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-green);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="18" cy="10" rx="14" ry="4"/>
+            <path d="M4 10v8c0 2.2 6.3 4 14 4s14-1.8 14-4v-8"/>
+            <path d="M4 18v8c0 2.2 6.3 4 14 4s14-1.8 14-4v-8"/>
+          </svg>
+        </div>
+        <h4>OneLake Expansion</h4>
+        <p>Mirroring now supports SharePoint Lists, Dremio (preview), Oracle and SAP Datasphere (GA), with Azure Monitor coming soon. Extended capabilities include Change Data Feed and views on mirrored data.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Shortcut transformations — GA (Excel → Delta tables in preview)</li>
+          <li>OneLake security — GA (row/column-level controls)</li>
+          <li>Read from OneLake via Azure Databricks Unity Catalog (preview)</li>
+          <li>Snowflake interoperability — GA</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-orange);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="24" height="28" rx="3"/>
+            <line x1="12" y1="12" x2="24" y2="12"/>
+            <line x1="12" y1="18" x2="24" y2="18"/>
+            <line x1="12" y1="24" x2="20" y2="24"/>
+            <circle cx="26" cy="26" r="5" fill="none"/>
+            <path d="M24 26l2 2 3-3"/>
+          </svg>
+        </div>
+        <h4>Fabric Analytics &amp; Runtime 2.0</h4>
+        <p>Runtime 2.0 (preview) brings Apache Spark 4.x, Delta Lake 4.x, and Scala 2.13 for large-scale data computation. Materialized lake views are now GA for simplified medallion architecture implementation.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Agentic Copilot in notebooks — workspace-aware code generation</li>
+          <li>Maps in Fabric — GA for geospatial real-time insights</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-purple);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="10" r="4"/>
+            <circle cx="8" cy="26" r="4"/>
+            <circle cx="28" cy="26" r="4"/>
+            <line x1="18" y1="14" x2="10" y2="22"/>
+            <line x1="18" y1="14" x2="26" y2="22"/>
+            <line x1="12" y1="26" x2="24" y2="26"/>
+          </svg>
+        </div>
+        <h4>Fabric IQ &amp; Semantic Intelligence</h4>
+        <p>Fabric IQ ontologies accessible via MCP server (preview), enabling agents to discover and act on your semantic layer.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li><strong>Planning in Fabric IQ</strong> — new enterprise planning capability to create plans, budgets, forecasts, and scenario models directly on semantic models. Combines historical, real-time, and forward-looking data in a single source.</li>
+          <li>Direct Lake on OneLake — GA (import-class performance, no data movement)</li>
+          <li>Graph in Fabric — GA (visualize complex entity relationships)</li>
+          <li>NVIDIA partnership for Physical AI &amp; digital twins</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-red);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="6" width="24" height="24" rx="4"/>
+            <circle cx="14" cy="16" r="2"/>
+            <circle cx="22" cy="16" r="2"/>
+            <path d="M12 22c0 0 2 3 6 3s6-3 6-3"/>
+          </svg>
+        </div>
+        <h4>Data &amp; Operations Agents</h4>
+        <p>Fabric data agents are now GA — virtual analysts aligned to specific domain data for deeper analysis and insights via natural language. Operations agents monitor real-time data, detect patterns, and take proactive action.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Usable across Fabric, Microsoft Foundry, Copilot Studio, and M365 Copilot</li>
+          <li>Grounded in ontology for business-context-aware responses</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-blue);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="8 28 8 8 28 8"/>
+            <polyline points="14 22 14 14 22 14"/>
+            <line x1="22" y1="14" x2="28" y2="8"/>
+            <circle cx="28" cy="28" r="4"/>
+            <line x1="8" y1="28" x2="24" y2="28"/>
+          </svg>
+        </div>
+        <h4>Developer Experience</h4>
+        <p>Fabric local MCP is now GA — connecting AI coding assistants like GitHub Copilot directly to Fabric. Fabric remote MCP (preview) enables cloud-hosted agent execution with authenticated actions.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Git selective branching for feature-scoped workflows</li>
+          <li>Agent Skills for Fabric — open-source GitHub Copilot terminal plugins</li>
+          <li>Fabric Jumpstart — reference architectures &amp; one-click sample deployments</li>
+          <li>Fabric Extensibility Toolkit (FET) — GA with CI/CD support</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-orange);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 8h8v8H8z"/>
+            <path d="M20 20h8v8h-8z"/>
+            <path d="M16 12h4v2h-4z"/>
+            <path d="M16 22h-2v-4h2"/>
+            <path d="M20 24l4-4"/>
+            <path d="M24 24l-4-4" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <h4>Migration Assistants</h4>
+        <p>New migration assistants (public preview) for Azure Data Factory, Synapse Analytics, and Azure SQL help move pipelines, Spark pools, notebooks, and database schemas into Fabric with minimal disruption.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>ADF &amp; Synapse: evaluate, convert, and optimize pipelines incrementally</li>
+          <li>SQL: import schemas via DACPACs with AI-assisted compatibility resolution</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <h3>AI-Ready Data Foundation — 4 Core Steps</h3>
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Building a Complete AI Foundation</div>
+      <p>Microsoft IQ provides an intelligence layer delivering shared, enterprise-grade business context from three sources: <strong>Work IQ</strong> (productivity signals), <strong>Foundry IQ</strong> (institutional knowledge), and <strong>Fabric IQ</strong> (live business data).</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>1. Unify Your Data Estate</h4>
+        <p>Eliminate silos and reduce architectural complexity with OneLake as a single logical data lake — no unnecessary ETL, fragmentation, or duplicated copies.</p>
+      </div>
+      <div class="card">
+        <h4>2. Process &amp; Harmonize Data</h4>
+        <p>Make data AI-ready — clean, connected, and structured for both operational and analytical use with Spark, T-SQL, KQL, and Analysis Services engines.</p>
+      </div>
+      <div class="card">
+        <h4>3. Curate Semantic Meaning</h4>
+        <p>Give agents contextual understanding through Fabric IQ ontologies, enabling them to interpret data the way your teams already do.</p>
+      </div>
+      <div class="card">
+        <h4>4. Empower AI Agents to Act</h4>
+        <p>Apply business context to automate workflows, accelerate decisions, and transform operations with data agents and operations agents.</p>
+      </div>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://azure.microsoft.com/en-us/blog/fabcon-and-sqlcon-2026-unifying-databases-and-fabric-on-a-single-data-platform/" target="_blank">FabCon & SQLCon 2026 Keynote Blog ↗</a>
+      <a href="https://learn.microsoft.com/en-us/fabric/database/" target="_blank">Database Hub in Fabric ↗</a>
+      <a href="https://learn.microsoft.com/en-us/fabric/iq/overview" target="_blank">Fabric IQ Overview ↗</a>
+      <a href="https://learn.microsoft.com/en-us/fabric/data-science/concept-data-agent" target="_blank">Fabric Data Agents ↗</a>
+      <a href="https://github.com/microsoft/mcp/blob/main/servers/Fabric.Mcp.Server/README.md" target="_blank">Fabric MCP Server (GitHub) ↗</a>
+      <a href="https://jumpstart.fabric.microsoft.com/" target="_blank">Fabric Jumpstart ↗</a>
+    </div>
+
+  </section>
 
   <section id="whats-new" class="section">
     <div class="section-header">

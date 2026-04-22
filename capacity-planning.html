@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/capacity-planning">
   <title>Capacity Planning — Microsoft Fabric Guide</title>
   <meta name="description" content="Capacity sizing, SKU selection, cost optimization, and TCO/ROI calculator for Microsoft Fabric.">
   <meta property="og:title" content="Capacity Planning — Microsoft Fabric Guide">
@@ -10,7 +11,10 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/capacity-planning">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Capacity Planning — Microsoft Fabric Guide">
   <meta name="twitter:description" content="Capacity sizing, SKU selection, cost optimization, and TCO/ROI calculator for Microsoft Fabric.">
   <link rel="stylesheet" href="css/styles.css">
@@ -366,6 +370,195 @@
       <a href="https://learn.microsoft.com/fabric/enterprise/metrics-app" target="_blank">Capacity Metrics App ↗</a>
       <a href="https://learn.microsoft.com/fabric/enterprise/licenses" target="_blank">Licensing & SKUs ↗</a>
       <a href="https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/" target="_blank">Fabric Pricing ↗</a>
+    </div>
+  </section>
+
+  <!-- ===============================================
+       Surge Protection
+       =============================================== -->
+  <section id="surge-protection" class="section" data-roles="it-admin,data-architect">
+    <div class="section-header">
+      <div class="section-number">Protection</div>
+      <h2>⚡ Surge Protection</h2>
+      <p class="section-subtitle">Proactively prevent capacity overload by rejecting background jobs before they cause deep throttling — at both the capacity and workspace level.</p>
+    </div>
+
+    <p>Standard throttling is <strong>reactive</strong> — Fabric delays or rejects jobs <em>after</em> the capacity is already overloaded, requiring a long recovery window. <strong>Surge protection</strong> is <strong>proactive</strong>: it rejects new background jobs <em>before</em> the capacity reaches critical levels, keeping interactive workloads (reports, queries) responsive.</p>
+
+    <div class="info-box important">
+      <div class="info-box-title">💡 Why It Matters</div>
+      <p>Without surge protection, background jobs (scheduled refreshes, pipeline runs, Spark jobs) keep being accepted until the capacity hits 100% — then <strong>everything</strong> gets throttled, including interactive queries and Power BI reports. With surge protection, background jobs are rejected early so interactive workloads remain unaffected.</p>
+    </div>
+
+    <!-- How It Works Diagram -->
+    <h3>How Surge Protection Works</h3>
+    <p>Admins configure two thresholds that control when background jobs are rejected and when they're allowed to resume:</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Surge Protection Thresholds — Background Rejection &amp; Recovery</div>
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" style="max-width:720px;width:100%;height:auto;">
+        <!-- Axes -->
+        <line x1="70" y1="20" x2="70" y2="210" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="70" y1="210" x2="700" y2="210" stroke="#e0e0e0" stroke-width="1"/>
+        <!-- Y axis labels -->
+        <text x="62" y="24" text-anchor="end" font-size="10" fill="#888899">CU %</text>
+        <text x="62" y="48" text-anchor="end" font-size="10" fill="#888899">100%</text>
+        <text x="62" y="88" text-anchor="end" font-size="10" fill="#888899">80%</text>
+        <text x="62" y="118" text-anchor="end" font-size="10" fill="#888899">60%</text>
+        <text x="62" y="168" text-anchor="end" font-size="10" fill="#888899">30%</text>
+        <text x="62" y="210" text-anchor="end" font-size="10" fill="#888899">0%</text>
+        <!-- Y grid lines -->
+        <line x1="70" y1="45" x2="700" y2="45" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="70" y1="85" x2="700" y2="85" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="70" y1="115" x2="700" y2="115" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="70" y1="165" x2="700" y2="165" stroke="#f0f0f0" stroke-width="1"/>
+        <!-- Rejection threshold line (e.g. 80%) -->
+        <line x1="70" y1="85" x2="700" y2="85" stroke="#DA3B01" stroke-width="2" stroke-dasharray="8,4"/>
+        <text x="705" y="89" font-size="10" fill="#DA3B01" font-weight="600">Rejection</text>
+        <!-- Recovery threshold line (e.g. 60%) -->
+        <line x1="70" y1="115" x2="700" y2="115" stroke="#498205" stroke-width="2" stroke-dasharray="8,4"/>
+        <text x="705" y="119" font-size="10" fill="#498205" font-weight="600">Recovery</text>
+        <!-- Danger zone fill between rejection and 100% -->
+        <rect x="70" y="45" width="630" height="40" fill="#DA3B01" fill-opacity="0.06"/>
+        <!-- Usage line -->
+        <polyline points="80,180 130,170 180,150 230,120 270,90 290,75 310,70 340,78 370,95 410,110 450,125 490,118 520,100 540,82 560,72 580,78 610,95 640,120 670,140 695,155" fill="none" stroke="#555566" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Surge active zones -->
+        <rect x="255" y="45" width="120" height="40" fill="#DA3B01" fill-opacity="0.12" rx="3"/>
+        <text x="315" y="38" text-anchor="middle" font-size="10" fill="#DA3B01" font-weight="600">🛑 BG jobs rejected</text>
+        <rect x="520" y="45" width="70" height="40" fill="#DA3B01" fill-opacity="0.12" rx="3"/>
+        <text x="555" y="38" text-anchor="middle" font-size="10" fill="#DA3B01" font-weight="600">🛑 Rejected</text>
+        <!-- Recovery zones -->
+        <text x="450" y="142" text-anchor="middle" font-size="10" fill="#498205" font-weight="600">✅ BG jobs resume</text>
+        <!-- Time labels -->
+        <text x="80" y="228" font-size="10" fill="#888899">12 AM</text>
+        <text x="230" y="228" font-size="10" fill="#888899">6 AM</text>
+        <text x="385" y="228" font-size="10" fill="#888899">12 PM</text>
+        <text x="540" y="228" font-size="10" fill="#888899">6 PM</text>
+        <text x="670" y="228" font-size="10" fill="#888899">12 AM</text>
+        <!-- Legend -->
+        <rect x="80" y="242" width="16" height="3" rx="1" fill="#DA3B01"/>
+        <text x="100" y="246" font-size="11" fill="#555566">Rejection threshold (admin-set)</text>
+        <rect x="340" y="242" width="16" height="3" rx="1" fill="#498205"/>
+        <text x="360" y="246" font-size="11" fill="#555566">Recovery threshold (admin-set)</text>
+        <rect x="580" y="242" width="16" height="3" rx="1" fill="#555566"/>
+        <text x="600" y="246" font-size="11" fill="#555566">Background CU usage</text>
+      </svg>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Threshold</th><th>What Happens</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><strong>🛑 Background Rejection</strong></td><td>When the 24-hour rolling average of <strong>background</strong> CU usage hits this %, new background jobs are <strong>rejected</strong></td><td>Not set (disabled)</td></tr>
+          <tr><td><strong>✅ Background Recovery</strong></td><td>When background CU usage falls below this %, rejected background jobs are <strong>allowed to resume</strong></td><td>Not set (disabled)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Key Insight</div>
+      <p>Only <strong>background</strong> operations (scheduled refreshes, pipeline runs, Spark batch jobs) are rejected by surge protection. <strong>Interactive</strong> workloads (Power BI reports, ad-hoc queries, notebook exploration) continue running normally. This ensures end users aren't impacted while the system recovers.</p>
+    </div>
+
+    <!-- Workspace-Level Controls -->
+    <h3>Workspace-Level Surge Protection</h3>
+    <p>Beyond capacity-wide thresholds, admins can set <strong>per-workspace CU limits</strong> for even more granular control. This prevents a single runaway workspace from monopolizing the entire capacity.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>📊 CU Spend Limit</h4>
+        <p>Set a maximum CU consumption per workspace as a <strong>percentage of total capacity</strong> within a rolling 24-hour window. If a workspace exceeds this, it's automatically <strong>blocked</strong> from new operations.</p>
+      </div>
+      <div class="card">
+        <h4>🏥 Mission Critical Mode</h4>
+        <p>Tag business-critical workspaces as <strong>Mission Critical</strong> to exempt them from surge protection rules. These workspaces always get resources — even when other workspaces are being blocked.</p>
+      </div>
+      <div class="card">
+        <h4>🔒 Manual Blocking</h4>
+        <p>Admins can manually <strong>block or unblock</strong> specific workspaces at any time — useful for emergency situations or during maintenance windows.</p>
+      </div>
+      <div class="card">
+        <h4>📈 Monitoring</h4>
+        <p>Track surge protection triggers, workspace block/unblock events, and CU usage in the <strong>Capacity Metrics app</strong> and <strong>Real-Time Hub</strong> for full visibility.</p>
+      </div>
+    </div>
+
+    <!-- Configuration Steps -->
+    <h3>How to Enable Surge Protection</h3>
+    <div class="diagram-container">
+      <div class="diagram-title">Configuration Steps — Admin Portal</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">⚙️</div>
+            <div class="stage-name">Admin Portal</div>
+          </div>
+          <div class="stage-desc">Open Fabric Admin Portal → Capacity settings</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🎚️</div>
+            <div class="stage-name">Set Thresholds</div>
+          </div>
+          <div class="stage-desc">Configure rejection &amp; recovery % for background jobs</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🏢</div>
+            <div class="stage-name">Workspace Limits</div>
+          </div>
+          <div class="stage-desc">Set per-workspace CU spend % and Mission Critical tags</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📊</div>
+            <div class="stage-name">Monitor</div>
+          </div>
+          <div class="stage-desc">Track events in Capacity Metrics app &amp; Real-Time Hub</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best Practices -->
+    <h3>Surge Protection Best Practices</h3>
+    <ul>
+      <li><strong>Start with conservative thresholds:</strong> Set the background rejection threshold at 70-80% and recovery at 50-60%. Adjust based on observed patterns.</li>
+      <li><strong>Tag critical workspaces first:</strong> Before enabling workspace-level limits, identify and tag your Mission Critical workspaces to avoid accidentally blocking production workloads.</li>
+      <li><strong>Monitor before enforcing:</strong> Enable surge protection in monitoring mode first (via the Capacity Metrics app) to understand your usage patterns before setting strict thresholds.</li>
+      <li><strong>Stagger background schedules:</strong> Combine surge protection with job scheduling best practices — spread scheduled refreshes across the day to reduce peak background CU consumption.</li>
+      <li><strong>Review regularly:</strong> As workloads grow, revisit your thresholds and workspace limits monthly. What worked at F32 may need adjustment at F64.</li>
+    </ul>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Error to Watch For</div>
+      <p>When surge protection rejects a job, users see the error <code>CapacityLimitExceededSurgeProtection</code>. If this happens frequently, either increase your rejection threshold, optimize the heavy background jobs, or scale up your capacity SKU.</p>
+    </div>
+
+    <!-- Comparison: Without vs With -->
+    <h3>Without vs. With Surge Protection</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Aspect</th><th>Without Surge Protection</th><th>With Surge Protection</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Background job acceptance</strong></td><td>Accepted until 100% capacity → everything throttled</td><td>Rejected at admin-set threshold → interactive jobs safe</td></tr>
+          <tr><td><strong>Interactive workload impact</strong></td><td>Delayed or blocked alongside background jobs</td><td>Remain responsive — only background jobs are restricted</td></tr>
+          <tr><td><strong>Recovery time</strong></td><td>Long — entire capacity must wind down</td><td>Short — fewer jobs in the queue, faster recovery</td></tr>
+          <tr><td><strong>Workspace isolation</strong></td><td>None — any workspace can consume all CUs</td><td>Per-workspace CU limits prevent monopolization</td></tr>
+          <tr><td><strong>Critical workload priority</strong></td><td>No differentiation</td><td>Mission Critical workspaces exempt from limits</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/enterprise/surge-protection" target="_blank">Surge Protection — Official Docs ↗</a>
+      <a href="https://blog.fabric.microsoft.com/en-us/blog/surge-protection-gets-smarter-introducing-workspace-level-controls-preview/" target="_blank">Workspace-Level Controls Blog Post ↗</a>
+      <a href="https://learn.microsoft.com/fabric/enterprise/metrics-app" target="_blank">Capacity Metrics App ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="#costs">Capacity &amp; Cost Management — Smoothing, Bursting &amp; Throttling →</a>
     </div>
   </section>
 

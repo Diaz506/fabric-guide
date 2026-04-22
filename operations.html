@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/operations">
   <title>Operations — Microsoft Fabric Guide</title>
   <meta name="description" content="CI/CD deployment patterns, Git integration, and migration strategies for Microsoft Fabric.">
   <meta property="og:title" content="Operations — Microsoft Fabric Guide">
@@ -10,7 +11,10 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/operations">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Operations — Microsoft Fabric Guide">
   <meta name="twitter:description" content="CI/CD deployment patterns, Git integration, and migration strategies for Microsoft Fabric.">
   <link rel="stylesheet" href="css/styles.css">
@@ -346,6 +350,54 @@ jobs:
       <li>Use <strong>Fabric mirroring</strong> to replicate SQL Server databases to OneLake in near real-time</li>
       <li>Plan for a hybrid phase where on-prem and Fabric run in parallel</li>
     </ul>
+
+    <h3>🛠️ Official Migration Tools & Resources</h3>
+    <p>Select your source platform to see the official Microsoft tools, step-by-step guidance, and current migration support status.</p>
+
+    <div class="migration-tools-selector" id="migration-tools">
+      <div class="card-grid">
+        <div class="card migration-tool-card" data-tool="synapse" style="cursor:pointer;">
+          <div class="card-icon" style="color:#0078D4;">🔷</div>
+          <h4>Azure Synapse Analytics</h4>
+          <p>Dedicated SQL pools, Spark pools, Synapse pipelines</p>
+          <span class="tag tag-green" style="font-size:11px;">Official Tools Available</span>
+        </div>
+        <div class="card migration-tool-card" data-tool="adf" style="cursor:pointer;">
+          <div class="card-icon" style="color:#F25022;">🔶</div>
+          <h4>Azure Data Factory</h4>
+          <p>ADF pipelines, linked services, data flows</p>
+          <span class="tag tag-green" style="font-size:11px;">Migration Assistant Available</span>
+        </div>
+        <div class="card migration-tool-card" data-tool="pbi" style="cursor:pointer;">
+          <div class="card-icon" style="color:#FFB900;">📊</div>
+          <h4>Power BI Premium (P-SKU)</h4>
+          <p>P1–P5 capacity with reports, datasets, dashboards</p>
+          <span class="tag tag-green" style="font-size:11px;">Guided Migration Path</span>
+        </div>
+        <div class="card migration-tool-card" data-tool="onprem" style="cursor:pointer;">
+          <div class="card-icon" style="color:#7FBA00;">🏢</div>
+          <h4>On-Premises SQL / SSIS</h4>
+          <p>SQL Server databases, SSIS packages, SSRS reports</p>
+          <span class="tag tag-orange" style="font-size:11px;">Partial Tooling</span>
+        </div>
+        <div class="card migration-tool-card" data-tool="databricks" style="cursor:pointer;">
+          <div class="card-icon" style="color:#9B4F96;">🧱</div>
+          <h4>Databricks</h4>
+          <p>Spark workspaces, Delta tables, MLflow experiments</p>
+          <span class="tag tag-orange" style="font-size:11px;">Manual Migration</span>
+        </div>
+        <div class="card migration-tool-card" data-tool="snowflake" style="cursor:pointer;">
+          <div class="card-icon" style="color:#29B5E8;">❄️</div>
+          <h4>Snowflake</h4>
+          <p>Snowflake warehouses, stages, stored procedures</p>
+          <span class="tag tag-orange" style="font-size:11px;">Mirroring + Manual</span>
+        </div>
+      </div>
+
+      <div class="migration-tool-detail" id="migration-tool-detail" style="display:none;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
 
     <div class="info-box warning">
       <div class="info-box-title">⚠️ Common Migration Pitfalls</div>

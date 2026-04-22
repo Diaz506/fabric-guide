@@ -43,6 +43,8 @@ function initFeatures() {
   if (document.getElementById('governance-assessment')) initGovernanceAssessment();
   if (document.getElementById('export-md')) initChecklistExport();
   if (document.getElementById('scenario-filter')) initScenarioFilter();
+  if (document.getElementById('migration-scorer')) initMigrationScorer();
+  if (document.getElementById('migration-tools')) initMigrationTools();
   initInteractiveArch();
   initRoleFilter();
 }
@@ -1178,6 +1180,264 @@ function initRoleFilter() {
   });
 
   applyFilter();
+}
+
+/* ============================================
+   MIGRATION COMPLEXITY SCORER
+   ============================================ */
+function initMigrationScorer() {
+  const container = document.getElementById('migration-scorer');
+  if (!container) return;
+
+  const questions = [
+    { q: 'What is your primary source platform?', cat: 'platform', opts: [
+      { text: '☁️ Azure Synapse Analytics', score: 1, risk: [] },
+      { text: '☁️ Azure Data Factory + SQL', score: 2, risk: ['Pipeline refactoring'] },
+      { text: '☁️ Databricks + Delta Lake', score: 2, risk: ['Spark config differences'] },
+      { text: '🏢 On-premises SQL Server / SSIS', score: 4, risk: ['Network connectivity', 'Legacy package conversion'] },
+      { text: '☁️ AWS / GCP / Snowflake', score: 3, risk: ['Cross-cloud data transfer', 'Proprietary feature mapping'] }
+    ]},
+    { q: 'How many data pipelines do you have?', cat: 'scale', opts: [
+      { text: '1–10 pipelines', score: 1, risk: [] },
+      { text: '11–50 pipelines', score: 2, risk: [] },
+      { text: '51–200 pipelines', score: 3, risk: ['Pipeline dependency mapping'] },
+      { text: '200+ pipelines', score: 5, risk: ['Pipeline dependency mapping', 'Phased migration required'] }
+    ]},
+    { q: 'What is your total data volume?', cat: 'scale', opts: [
+      { text: 'Under 100 GB', score: 1, risk: [] },
+      { text: '100 GB – 1 TB', score: 2, risk: [] },
+      { text: '1 TB – 10 TB', score: 3, risk: ['Data transfer planning'] },
+      { text: '10 TB+', score: 5, risk: ['Data transfer planning', 'Capacity sizing critical'] }
+    ]},
+    { q: 'How many reports and dashboards?', cat: 'bi', opts: [
+      { text: '1–20 reports', score: 1, risk: [] },
+      { text: '21–100 reports', score: 2, risk: ['Semantic model consolidation'] },
+      { text: '100+ reports', score: 4, risk: ['Semantic model consolidation', 'Report usage analysis needed'] }
+    ]},
+    { q: 'What is your team\'s Fabric / cloud experience?', cat: 'team', opts: [
+      { text: '🟢 Experienced — team has used Fabric or Synapse', score: 1, risk: [] },
+      { text: '🟡 Moderate — cloud experience, new to Fabric', score: 2, risk: ['Training investment'] },
+      { text: '🔴 Limited — mostly on-premises experience', score: 4, risk: ['Training investment', 'Change management'] }
+    ]},
+    { q: 'Do you have regulatory compliance requirements?', cat: 'compliance', opts: [
+      { text: 'No special requirements', score: 1, risk: [] },
+      { text: 'Standard (SOC 2, ISO 27001)', score: 2, risk: ['Compliance validation'] },
+      { text: 'Strict (HIPAA, PCI-DSS, FedRAMP)', score: 4, risk: ['Compliance validation', 'Data residency planning', 'Private networking'] }
+    ]},
+    { q: 'Do you need real-time / streaming analytics?', cat: 'realtime', opts: [
+      { text: 'No — batch only', score: 0, risk: [] },
+      { text: 'Yes — basic event processing', score: 2, risk: ['Eventstream configuration'] },
+      { text: 'Yes — complex event processing with low latency', score: 4, risk: ['Eventstream configuration', 'Eventhouse sizing'] }
+    ]},
+    { q: 'What is your current CI/CD maturity?', cat: 'devops', opts: [
+      { text: '🟢 Mature — Git, automated pipelines, IaC', score: 0, risk: [] },
+      { text: '🟡 Basic — some version control, manual deploys', score: 2, risk: ['DevOps setup needed'] },
+      { text: '🔴 None — manual everything', score: 3, risk: ['DevOps setup needed', 'Change management'] }
+    ]}
+  ];
+
+  let current = 0;
+  let totalScore = 0;
+  let risks = new Set();
+
+  function renderQuiz() {
+    const progress = questions.map((_, i) =>
+      `<div class="wizard-progress-dot ${i < current ? 'completed' : ''} ${i === current ? 'current' : ''}"></div>`
+    ).join('');
+
+    const q = questions[current];
+    const opts = q.opts.map((o, i) =>
+      `<div class="quiz-option" data-idx="${i}"><span class="option-icon">▸</span> ${o.text}</div>`
+    ).join('');
+
+    container.querySelector('.ms-inner').innerHTML =
+      `<div class="quiz-container">
+        <div class="wizard-progress">${progress}</div>
+        <div class="quiz-question active">
+          <span class="tag tag-purple">Question ${current + 1} of ${questions.length}</span>
+          <h4>${q.q}</h4>
+          <div class="quiz-options">${opts}</div>
+        </div>
+      </div>`;
+
+    container.querySelectorAll('.quiz-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const idx = parseInt(opt.dataset.idx);
+        const chosen = q.opts[idx];
+        totalScore += chosen.score;
+        chosen.risk.forEach(r => risks.add(r));
+        current++;
+        if (current < questions.length) renderQuiz();
+        else renderResult();
+      });
+    });
+  }
+
+  function renderResult() {
+    const max = questions.reduce((s, q) => s + Math.max(...q.opts.map(o => o.score)), 0);
+    const pct = Math.round((totalScore / max) * 100);
+    let level, color, phases, duration;
+    if (pct <= 25) { level = 'Low'; color = 'var(--accent-green)'; phases = '2–3'; duration = '4–8 weeks'; }
+    else if (pct <= 50) { level = 'Medium'; color = 'var(--accent-blue)'; phases = '3–4'; duration = '8–16 weeks'; }
+    else if (pct <= 75) { level = 'High'; color = 'var(--accent-orange)'; phases = '4–5'; duration = '16–28 weeks'; }
+    else { level = 'Very High'; color = '#DA3B01'; phases = '5+'; duration = '28–52 weeks'; }
+
+    const riskTags = [...risks].map(r => `<span class="migration-risk-tag">${r}</span>`).join('');
+
+    container.querySelector('.ms-inner').innerHTML =
+      `<div class="calc-result">
+        <div class="migration-result-grid">
+          <div class="migration-metric">
+            <div class="migration-metric-value" style="color:${color}">${level}</div>
+            <div class="migration-metric-label">Complexity</div>
+          </div>
+          <div class="migration-metric">
+            <div class="migration-metric-value" style="color:${color}">${phases}</div>
+            <div class="migration-metric-label">Est. Phases</div>
+          </div>
+          <div class="migration-metric">
+            <div class="migration-metric-value" style="color:${color}">${duration}</div>
+            <div class="migration-metric-label">Est. Duration</div>
+          </div>
+          <div class="migration-metric">
+            <div class="migration-metric-value">${risks.size}</div>
+            <div class="migration-metric-label">Risk Areas</div>
+          </div>
+        </div>
+        <div class="migration-phases">
+          <div class="migration-phase"><div class="migration-phase-num">1</div>Assess &<br>Plan</div>
+          <div class="migration-phase"><div class="migration-phase-num">2</div>Foundation<br>Setup</div>
+          <div class="migration-phase"><div class="migration-phase-num">3</div>Data<br>Migration</div>
+          <div class="migration-phase"><div class="migration-phase-num">4</div>Workload<br>Cutover</div>
+          <div class="migration-phase"><div class="migration-phase-num">5</div>Optimize &<br>Validate</div>
+        </div>
+        ${risks.size ? `<div class="migration-risks"><strong>⚠️ Key Risk Areas:</strong><br>${riskTags}</div>` : '<p style="color:var(--accent-green);font-weight:600;">✅ No significant risk areas identified.</p>'}
+        <button class="wp-export-btn" style="margin-top:16px;max-width:200px;" onclick="this.closest('.ms-inner').querySelector('.calc-result') && (function(el){
+          el.parentElement.innerHTML='';
+        })(this)">↻ Retake Assessment</button>
+      </div>`;
+
+    container.querySelector('.wp-export-btn').addEventListener('click', e => {
+      e.preventDefault();
+      current = 0; totalScore = 0; risks = new Set();
+      renderQuiz();
+    });
+  }
+
+  renderQuiz();
+}
+
+/* ============================================
+   MIGRATION TOOLS SELECTOR
+   ============================================ */
+function initMigrationTools() {
+  const container = document.getElementById('migration-tools');
+  if (!container) return;
+  const detail = document.getElementById('migration-tool-detail');
+
+  const tools = {
+    synapse: {
+      icon: '🔷', title: 'Azure Synapse Analytics', status: 'ga', statusLabel: '✅ Official Tools Available',
+      tools: [
+        { name: 'Fabric Data Warehouse Migration Guide', desc: 'Step-by-step guide for migrating Synapse Dedicated SQL pools to Fabric Warehouse. Covers schema migration, T-SQL compatibility, stored procedures, and data movement.', link: 'https://learn.microsoft.com/fabric/data-warehouse/migration-synapse-dedicated-sql-pool-warehouse', linkText: 'View Migration Guide ↗' },
+        { name: 'Synapse Spark → Fabric Notebooks', desc: 'PySpark and Scala code is largely compatible. Update library references, session configurations, and linked service connections. Fabric notebooks support the same Spark runtime.', link: 'https://learn.microsoft.com/fabric/data-engineering/migrate-synapse-spark-to-fabric', linkText: 'Spark Migration Docs ↗' },
+        { name: 'OneLake Shortcuts (Zero-Copy Bridge)', desc: 'Create Shortcuts to your existing ADLS Gen2 storage during transition — no data movement required. Both Synapse and Fabric can read from the same storage simultaneously.', link: 'https://learn.microsoft.com/fabric/onelake/onelake-shortcuts', linkText: 'Shortcuts Documentation ↗' }
+      ],
+      steps: ['Assess workloads & dependencies', 'Create Fabric Workspace', 'Set up Shortcuts to existing ADLS', 'Migrate SQL schemas & procedures', 'Port Spark notebooks', 'Validate & performance test', 'Cutover & decommission Synapse']
+    },
+    adf: {
+      icon: '🔶', title: 'Azure Data Factory', status: 'ga', statusLabel: '✅ Migration Assistant Available',
+      tools: [
+        { name: 'Data Factory Migration Assistant', desc: 'Open-source, browser-based tool that automates migration of ADF pipelines to Fabric. Parses ARM templates, analyzes compatibility, maps 50+ connectors, and preserves folder structure. No server infrastructure needed.', link: 'https://github.com/microsoft/fabric-toolbox/tree/main/tools/FabricDataFactoryMigrationAssistant', linkText: 'GitHub — Migration Assistant ↗' },
+        { name: 'ADF to Fabric Data Factory Guide', desc: 'Official Microsoft Learn documentation covering pipeline activity mapping, connector equivalents, linked service migration, and Dataflow Gen2 replacements for ADF data flows.', link: 'https://learn.microsoft.com/fabric/data-factory/upgrade-paths', linkText: 'ADF Migration Guide ↗' }
+      ],
+      steps: ['Export ADF ARM templates', 'Run Migration Assistant analysis', 'Review compatibility report', 'Execute automated migration', 'Validate pipeline execution', 'Update schedules & triggers', 'Decommission ADF pipelines']
+    },
+    pbi: {
+      icon: '📊', title: 'Power BI Premium (P-SKU)', status: 'ga', statusLabel: '✅ Guided Migration Path',
+      tools: [
+        { name: 'P-SKU to F-SKU Workspace Migration', desc: 'Reassign Power BI Premium workspaces to Fabric capacity (F64+). Existing reports, datasets, and dashboards continue to work unchanged. P1≈F64, P2≈F128, P3≈F256.', link: 'https://learn.microsoft.com/fabric/enterprise/licenses', linkText: 'Licensing & SKU Mapping ↗' },
+        { name: 'Import to Direct Lake Migration', desc: 'Convert import-mode datasets to Direct Lake for better performance and lower cost. Direct Lake reads Delta tables directly from OneLake without importing data into Power BI memory.', link: 'https://learn.microsoft.com/power-bi/enterprise/directlake-overview', linkText: 'Direct Lake Overview ↗' },
+        { name: 'Fabric Capacity Metrics App', desc: 'Monitor CU consumption after migration to validate capacity sizing. Compare utilization patterns between P-SKU and F-SKU to right-size your Fabric capacity.', link: 'https://learn.microsoft.com/fabric/enterprise/metrics-app', linkText: 'Capacity Metrics App ↗' }
+      ],
+      steps: ['Inventory P-SKU workspaces & usage', 'Map P-SKU to equivalent F-SKU', 'Provision Fabric capacity', 'Reassign workspaces to F-SKU', 'Migrate import datasets to Direct Lake', 'Validate reports & refreshes', 'Monitor with Capacity Metrics App']
+    },
+    onprem: {
+      icon: '🏢', title: 'On-Premises SQL Server / SSIS', status: 'partial', statusLabel: '⚠️ Partial Tooling',
+      tools: [
+        { name: 'Fabric Mirroring for SQL Server', desc: 'Near real-time replication of on-premises SQL Server databases to OneLake as Delta tables. Supports change data capture (CDC) with minimal source impact.', link: 'https://learn.microsoft.com/fabric/database/mirrored-database/overview', linkText: 'Mirroring Documentation ↗' },
+        { name: 'On-Premises Data Gateway', desc: 'Secure data movement between on-premises sources and Fabric. Required for Data Factory pipelines that connect to SQL Server, file shares, or other on-premises systems.', link: 'https://learn.microsoft.com/data-integration/gateway/service-gateway-onprem', linkText: 'Data Gateway Setup ↗' },
+        { name: 'SSIS to Dataflows Gen2 (Manual)', desc: 'No automated converter exists for SSIS packages. Rebuild transformation logic using Dataflows Gen2 (Power Query) or Fabric Notebooks. Microsoft provides mapping guidance for common SSIS tasks.', link: 'https://learn.microsoft.com/fabric/data-factory/dataflows-gen2-overview', linkText: 'Dataflows Gen2 Overview ↗' }
+      ],
+      steps: ['Inventory SQL databases & SSIS packages', 'Install On-Premises Data Gateway', 'Enable Mirroring for SQL databases', 'Rebuild SSIS logic in Dataflows/Notebooks', 'Set up incremental refresh schedules', 'Validate data accuracy', 'Plan hybrid coexistence phase']
+    },
+    databricks: {
+      icon: '🧱', title: 'Databricks', status: 'manual', statusLabel: '⚠️ Manual Migration',
+      tools: [
+        { name: 'Spark Notebook Porting Guide', desc: 'Fabric supports the same Apache Spark runtime. Port PySpark and Scala code with minimal changes — update cluster configs, library imports, and mount points. Delta Lake tables are natively compatible.', link: 'https://learn.microsoft.com/fabric/data-engineering/migrate-synapse-spark-to-fabric', linkText: 'Spark Migration Guide ↗' },
+        { name: 'OneLake Shortcuts for Delta Tables', desc: 'Point Fabric directly at your existing Delta Lake tables in ADLS Gen2 using Shortcuts. No data copy needed — both Databricks and Fabric can read the same storage during transition.', link: 'https://learn.microsoft.com/fabric/onelake/onelake-shortcuts', linkText: 'Shortcuts Documentation ↗' },
+        { name: 'MLflow Experiment Migration', desc: 'Fabric has built-in MLflow integration for experiment tracking and model registry. Export experiments from Databricks MLflow and re-register in Fabric\'s MLflow instance.', link: 'https://learn.microsoft.com/fabric/data-science/machine-learning-experiment', linkText: 'ML Experiments in Fabric ↗' }
+      ],
+      steps: ['Inventory Databricks workspaces & jobs', 'Create Shortcuts to existing Delta storage', 'Port notebook code (update configs)', 'Migrate MLflow experiments', 'Rebuild job schedules as Data Pipelines', 'Performance test with production data', 'Gradual workload cutover']
+    },
+    snowflake: {
+      icon: '❄️', title: 'Snowflake', status: 'partial', statusLabel: '⚠️ Mirroring + Manual',
+      tools: [
+        { name: 'Fabric Mirroring for Snowflake', desc: 'Near real-time replication from Snowflake to OneLake as Delta tables. Supports incremental sync with change tracking. Data lands in a Fabric Lakehouse for immediate querying.', link: 'https://learn.microsoft.com/fabric/database/mirrored-database/snowflake', linkText: 'Snowflake Mirroring Docs ↗' },
+        { name: 'SQL Translation Guide', desc: 'Map Snowflake SQL dialect to Fabric T-SQL (Warehouse) or SparkSQL (Lakehouse). Key differences: VARIANT type handling, JavaScript UDFs, QUALIFY clause, and time-travel syntax.', link: 'https://learn.microsoft.com/fabric/data-warehouse/tsql-surface-area', linkText: 'Fabric T-SQL Reference ↗' },
+        { name: 'Stored Procedure Migration', desc: 'Snowflake JavaScript stored procedures need rewriting as T-SQL procedures in Fabric Warehouse or PySpark logic in Notebooks. No automated converter available.', link: 'https://learn.microsoft.com/fabric/data-warehouse/stored-procedures', linkText: 'Fabric Stored Procedures ↗' }
+      ],
+      steps: ['Inventory Snowflake databases & procedures', 'Enable Mirroring for source databases', 'Validate mirrored data in Fabric', 'Translate SQL dialect differences', 'Rewrite stored procedures', 'Migrate BI connections to Fabric endpoints', 'Decommission Snowflake warehouse']
+    }
+  };
+
+  let activeCard = null;
+
+  container.querySelectorAll('.migration-tool-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const toolId = card.dataset.tool;
+      const data = tools[toolId];
+      if (!data) return;
+
+      container.querySelectorAll('.migration-tool-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      activeCard = toolId;
+
+      const toolCards = data.tools.map(t =>
+        `<div class="mt-tool">
+          <h5>${t.name}</h5>
+          <p>${t.desc}</p>
+          <a href="${t.link}" target="_blank" rel="noopener">${t.linkText}</a>
+        </div>`
+      ).join('');
+
+      const stepItems = data.steps.map((s, i) =>
+        `<div class="mt-step"><div class="mt-step-num">${i + 1}</div>${s}</div>`
+      ).join('');
+
+      detail.innerHTML =
+        `<button class="mt-close" title="Close">✕</button>
+        <div class="mt-header">
+          <span style="font-size:28px;">${data.icon}</span>
+          <h4>${data.title}</h4>
+          <span class="mt-status ${data.status}">${data.statusLabel}</span>
+        </div>
+        <div class="mt-tools-grid">${toolCards}</div>
+        <div class="mt-steps">
+          <h5>Recommended Migration Steps</h5>
+          <div class="mt-step-list">${stepItems}</div>
+        </div>`;
+
+      detail.style.display = 'block';
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      detail.querySelector('.mt-close').addEventListener('click', () => {
+        detail.style.display = 'none';
+        container.querySelectorAll('.migration-tool-card').forEach(c => c.classList.remove('active'));
+        activeCard = null;
+      });
+    });
+  });
 }
 
 if (document.readyState === 'loading') {

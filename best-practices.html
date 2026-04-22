@@ -3,16 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/best-practices">
   <title>Best Practices — Microsoft Fabric Guide</title>
-  <meta name="description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <meta name="description" content="Data engineering, real-time analytics, Power BI integration, and AI data preparation best practices for Microsoft Fabric.">
   <meta property="og:title" content="Best Practices — Microsoft Fabric Guide">
-  <meta property="og:description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <meta property="og:description" content="Data engineering, real-time analytics, Power BI integration, and AI data preparation best practices for Microsoft Fabric.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/best-practices">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Best Practices — Microsoft Fabric Guide">
-  <meta name="twitter:description" content="Data engineering, real-time analytics, and Power BI integration best practices for Microsoft Fabric.">
+  <meta name="twitter:description" content="Data engineering, real-time analytics, Power BI integration, and AI data preparation best practices for Microsoft Fabric.">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
 </head>
@@ -235,6 +239,323 @@
       <a href="https://learn.microsoft.com/power-bi/guidance/star-schema" target="_blank">Star Schema Design ↗</a>
     </div>
 
+  </section>
+
+  <!-- ===============================================
+       Preparing Data for AI
+       =============================================== -->
+  <section id="data-for-ai" class="section" data-roles="bi-developer,data-engineer,data-architect,data-scientist">
+    <div class="section-header">
+      <div class="section-number">AI Readiness</div>
+      <h2>Preparing Data for AI</h2>
+      <p class="section-subtitle">Best practices for preparing your semantic models and data sources for Copilot for Power BI and Fabric Data Agents.</p>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">🤖 Why This Matters</div>
+      <p>Without proper data preparation, AI features can struggle to interpret your data correctly — leading to generic, inaccurate, or misleading outputs. Investing in data prep helps AI understand your unique business context, prioritize the right information, and deliver responses that are consistent, reliable, and aligned with your goals.</p>
+    </div>
+
+    <!-- ── Copilot for Power BI ── -->
+    <h3>Copilot for Power BI — Prep Data for AI Toolkit</h3>
+    <p>Power BI provides a unified <strong>"Prep data for AI"</strong> experience (available in both Desktop and the Power BI service) with three key features to optimize your semantic model for Copilot interactions.</p>
+
+    <div class="info-box tip">
+      <div class="info-box-title">📋 Prerequisites</div>
+      <p>Requires a paid Fabric capacity (F2+) or Power BI Premium (P1+), the Copilot admin setting enabled, and <strong>Power BI Q&A</strong> enabled on your semantic model. Sovereign clouds are not yet supported.</p>
+    </div>
+
+    <h4>1. AI Data Schema — Simplify Your Model</h4>
+    <p>Define a focused subset of your model's fields for Copilot to prioritize. By selecting only the most relevant fields, you reduce ambiguity and help Copilot deliver clearer, more accurate responses.</p>
+    <ul>
+      <li>Open <strong>Prep data for AI → Simplify data schema</strong> tab</li>
+      <li>Select fields you want Copilot to reason over — prioritize clean columns with limited ambiguity</li>
+      <li>Remove any fields that could be confusing (duplicate names, internal IDs, staging columns)</li>
+      <li>Hidden fields in the semantic model are automatically excluded in the initial schema</li>
+      <li>Relationships between fields are still respected even if one side is excluded</li>
+    </ul>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Scope Limitation</div>
+      <p>The AI data schema only applies to Copilot capabilities that use the schema (e.g., answering data questions). It does <strong>not</strong> affect report page creation, DAX queries, or dataset summaries — those still use the full model.</p>
+    </div>
+
+    <h4>2. AI Instructions — Add Business Context</h4>
+    <p>Provide context, business logic, and specific guidance directly on the semantic model. Copilot uses these instructions to better interpret user questions by incorporating organizational language, terminology, and analytical priorities.</p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>📊 Business Context</h4>
+        <ul>
+          <li>"Busy season is October to February"</li>
+          <li>"Frame insights with a focus on risk assessment"</li>
+          <li>"When a user mentions <em>ABCD</em>, they mean the <strong>total invoice</strong> field"</li>
+          <li>"A lower attrition percent is more positive"</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>📐 Analysis Rules</h4>
+        <ul>
+          <li>"Always analyze sales on a quarterly basis"</li>
+          <li>"For retail insights, prioritize the <code>customsegmentationtable</code>"</li>
+          <li>"Use the <code>sales_fact</code> table as the primary source for all sales questions"</li>
+          <li>"When a user asks about product sales, always ask for clarification on location"</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Prompt Engineering Tips for AI Instructions</div>
+      <ul>
+        <li><strong>Be explicit and specific</strong> — Assume Copilot has no understanding of your business</li>
+        <li><strong>Use analogies and examples</strong> — Concrete field/measure references help the model</li>
+        <li><strong>Avoid ambiguity</strong> — Spell out which measure or table to use (and which to avoid)</li>
+        <li><strong>Order matters</strong> — Test different orderings; the sequence of instructions can affect output quality</li>
+        <li><strong>Break down complex instructions</strong> — Split multi-step logic into simple sequential steps</li>
+        <li><strong>Keep focused</strong> — Conflicting or overly complex instructions can confuse the LLM. Less is sometimes more.</li>
+      </ul>
+    </div>
+
+    <h4>Good vs. Bad: AI Instructions</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th style="width:50%">❌ Bad — Vague or Ambiguous</th><th style="width:50%">✅ Good — Specific and Actionable</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><em>"You're a seasoned BI Analyst who is detail oriented."</em></td>
+            <td><em>"You're a BI Analyst for a food distributor. Responses should be detail oriented and focused on revenue and profitability."</em></td>
+          </tr>
+          <tr>
+            <td><em>"Use the right sales measure."</em></td>
+            <td><em>"For product-specific sales, use the measure <code>Total_Sales_Product</code>. Filter on the Product column from the Sales table. Examples of products: Word, PowerPoint, Excel."</em></td>
+          </tr>
+          <tr>
+            <td><em>"Show active partners count."</em></td>
+            <td><em>"For Total Active Partners, use the measure <code>Monthly Active Partner Count_ID</code>. Do NOT filter on the Customers table."</em></td>
+          </tr>
+          <tr>
+            <td><em>"Analyze sales by time."</em></td>
+            <td><em>"Always analyze sales on a quarterly basis. When showcasing revenue, break it down by quarter and compare to the <code>industry</code> field."</em></td>
+          </tr>
+          <tr>
+            <td><em>"Find top customers."</em></td>
+            <td><em>"Define top customers by first looking at the revenue table, then returning only customers with the highest order values. Some partners are also customers — don't remove duplicates; indicate whether each is a partner or customer based on the ID value."</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Good vs. Bad: Semantic Model Design for AI</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th style="width:50%">❌ Bad — AI-Unfriendly Model</th><th style="width:50%">✅ Good — AI-Ready Model</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Column named <code>col_amt_1</code> with no description</td>
+            <td>Column named <code>Total Sales Amount</code> with description: <em>"Net revenue after discounts in USD"</em></td>
+          </tr>
+          <tr>
+            <td>Flat table with 80 columns mixing facts and dimensions</td>
+            <td>Star schema with separate <code>fact_sales</code>, <code>dim_product</code>, <code>dim_date</code> tables</td>
+          </tr>
+          <tr>
+            <td>All 80 columns exposed to AI data schema</td>
+            <td>AI data schema includes only the 25 most relevant, well-named fields</td>
+          </tr>
+          <tr>
+            <td>Staging tables (<code>stg_raw_import</code>) visible in the model</td>
+            <td>Staging/internal tables hidden; only Gold-layer tables exposed</td>
+          </tr>
+          <tr>
+            <td>Duplicate columns: <code>Revenue</code>, <code>Revenue_v2</code>, <code>Rev_Final</code></td>
+            <td>Single canonical <code>Revenue</code> column; deprecated variants removed</td>
+          </tr>
+          <tr>
+            <td>No Q&A enabled, no descriptions, no AI instructions</td>
+            <td>Q&A enabled, measures have descriptions, AI instructions explain business context and analysis rules</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>3. Verified Answers — Curated Responses</h4>
+    <p>Verified answers are human-approved, visual responses triggered by predefined phrases. They provide consistent, reliable answers to common business questions and help Copilot learn from effective responses over time.</p>
+    <ul>
+      <li>Select a visual → <strong>"Set up a verified answer"</strong> from the <code>…</code> menu</li>
+      <li>Add <strong>5–7 trigger phrases</strong> per answer that reflect how users naturally ask about the data</li>
+      <li>Use <strong>Copilot-generated suggestions</strong> for additional trigger phrases</li>
+      <li>Add up to <strong>3 filters</strong> that users can adjust via natural language (e.g., "for the Northeast region")</li>
+      <li>Copilot uses both <strong>exact</strong> and <strong>semantic matching</strong> — users don't need to match trigger phrases word-for-word</li>
+      <li>Stored at the <strong>semantic model level</strong> — works across all reports using that model</li>
+    </ul>
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Verified answers per model</td><td>250</td></tr>
+          <tr><td>Trigger phrases per answer</td><td>15</td></tr>
+          <tr><td>Character limit per trigger</td><td>500</td></tr>
+          <tr><td>Filter permutations per answer</td><td>10</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>4. Mark Model "Approved for Copilot"</h4>
+    <p>After preparing your semantic model, mark it as <strong>Approved for Copilot</strong> in the model's settings in the Power BI service. This removes the friction treatment (confidence warnings) from answers in the standalone Copilot experience. Changes can take up to 24 hours to propagate for models with many reports.</p>
+
+    <!-- ── Fabric Data Agents ── -->
+    <h3>Fabric Data Agents — Data Preparation</h3>
+    <p>Fabric Data Agents are configurable AI artifacts that enable conversational Q&A over your organizational data. They use NL-to-SQL, NL-to-DAX, and NL-to-KQL to query data across OneLake, semantic models, and KQL databases.</p>
+
+    <h4>Selecting Data Sources & Tables</h4>
+    <ul>
+      <li>A Data Agent supports <strong>up to 5 data sources</strong> in any combination: Lakehouses, Warehouses, KQL databases, Power BI semantic models, Ontologies, and Microsoft Graph</li>
+      <li>For each source, <strong>select only the relevant tables</strong> — focus the agent on data that matters</li>
+      <li>If your data starts as files (CSV, JSON), <strong>ingest into tables first</strong> — agents query tables, not individual files</li>
+      <li>For Power BI semantic models, users only need <strong>Read permission</strong> to interact via the agent</li>
+    </ul>
+
+    <h4>Agent Instructions & Examples</h4>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>📝 Agent Instructions</h4>
+        <p>Provide custom rules, terminology, and data source routing guidance:</p>
+        <ul>
+          <li>Direct <strong>financial metrics</strong> questions to a Power BI semantic model</li>
+          <li>Route <strong>raw data exploration</strong> queries to the Lakehouse</li>
+          <li>Send <strong>log analysis</strong> questions to the KQL database</li>
+          <li>Clarify organizational terminology and abbreviations</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔍 Example Queries</h4>
+        <p>Provide question–query pairs to guide agent behavior:</p>
+        <ul>
+          <li>Natural language question + corresponding SQL/KQL query</li>
+          <li>Helps the agent understand how to interpret similar questions</li>
+          <li>Not currently supported for Power BI semantic model sources</li>
+          <li>Include complex real-world examples (joins, aggregations, CTEs)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4>Good vs. Bad: Data Agent Setup</h4>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th style="width:50%">❌ Bad — Poor Agent Configuration</th><th style="width:50%">✅ Good — Well-Configured Agent</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Add all lakehouse tables (including staging, temp, and system tables)</td>
+            <td>Select only curated Gold-layer tables relevant to the agent's purpose</td>
+          </tr>
+          <tr>
+            <td>No agent instructions — let the AI figure it out</td>
+            <td>Instructions specify: <em>"Direct financial questions to the <code>finance_model</code> semantic model. Route raw event queries to the Lakehouse. Send log analysis to the KQL database."</em></td>
+          </tr>
+          <tr>
+            <td>No example queries provided</td>
+            <td>5–10 example question–SQL pairs covering joins, aggregations, and common business questions</td>
+          </tr>
+          <tr>
+            <td>Data agent exposes CSV files directly from OneLake</td>
+            <td>CSV/JSON files ingested into lakehouse tables before adding to agent</td>
+          </tr>
+          <tr>
+            <td>Published without testing — users report wrong answers</td>
+            <td>Tested iteratively with colleagues, instructions refined based on feedback, then published</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Governance & Security Layers</h4>
+    <p>Data Agents enforce a strict intent precedence model — higher layers always override lower ones:</p>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Layer</th><th>Description</th><th>Precedence</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Organizational Intent</strong></td><td>Tenant-wide policies, compliance requirements</td><td>🔴 Highest</td></tr>
+          <tr><td><strong>Role-based Intent</strong></td><td>Workspace governance, permission boundaries</td><td>🟠 High</td></tr>
+          <tr><td><strong>Developer Intent</strong></td><td>Custom instructions, example queries, data source config</td><td>🟡 Medium</td></tr>
+          <tr><td><strong>User Intent</strong></td><td>Questions and prompts from end users</td><td>🟢 Lowest</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li>Agents enforce <strong>read-only</strong> data access — no writes, no mutations</li>
+      <li>All queries run with the <strong>requesting user's credentials</strong> (least-privilege)</li>
+      <li>Microsoft Purview policies apply: DLP, access restrictions, risk discovery, and audit</li>
+      <li>Optional <strong>Azure AI Content Safety</strong> integration for content risk controls</li>
+    </ul>
+
+    <!-- ── Checklist ── -->
+    <h3>AI Readiness Checklist</h3>
+    <p>A combined checklist for preparing your data for both Copilot for Power BI and Fabric Data Agents:</p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+      <div class="card">
+        <h4>✅ Semantic Model Prep (Copilot)</h4>
+        <ul>
+          <li>Use clean, descriptive column names — avoid abbreviations</li>
+          <li>Add descriptions to measures and important columns</li>
+          <li>Build a <strong>star schema</strong> with clear fact/dimension separation</li>
+          <li>Enable <strong>Q&A</strong> on the semantic model</li>
+          <li>Set an <strong>AI data schema</strong> — select only relevant fields</li>
+          <li>Write <strong>AI instructions</strong> with business context and analysis rules</li>
+          <li>Create <strong>verified answers</strong> for your top 10 business questions</li>
+          <li>Enable <strong>Copilot indexing</strong> for faster responses</li>
+          <li>Test changes iteratively in the Copilot pane</li>
+          <li>Mark model as <strong>"Approved for Copilot"</strong></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>✅ Data Agent Prep</h4>
+        <ul>
+          <li>Choose the right data sources (max 5 per agent)</li>
+          <li>Select only <strong>relevant tables</strong> — don't expose staging/temp tables</li>
+          <li>Ingest file-based data into <strong>Lakehouse tables</strong></li>
+          <li>Write <strong>agent instructions</strong> with routing rules and terminology</li>
+          <li>Provide <strong>example query pairs</strong> for complex question patterns</li>
+          <li>Configure <strong>user permissions</strong> (Read on semantic models)</li>
+          <li>Test with colleagues and iterate on instructions</li>
+          <li>Publish and share via <strong>Copilot in Power BI</strong></li>
+          <li>Review <strong>Purview governance</strong> policies for compliance</li>
+          <li>Enable <strong>Azure AI Content Safety</strong> for production agents</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/power-bi/create-reports/copilot-prepare-data-ai" target="_blank">Prep Data for AI — Overview ↗</a>
+      <a href="https://learn.microsoft.com/power-bi/create-reports/copilot-prepare-data-ai-data-schema" target="_blank">AI Data Schema ↗</a>
+      <a href="https://learn.microsoft.com/power-bi/create-reports/copilot-prepare-data-ai-instructions" target="_blank">AI Instructions ↗</a>
+      <a href="https://learn.microsoft.com/power-bi/create-reports/copilot-prepare-data-ai-verified-answers" target="_blank">Verified Answers ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-science/concept-data-agent" target="_blank">Fabric Data Agents — Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-science/data-agent-scenario" target="_blank">Data Agent Scenario Walkthrough ↗</a>
+    </div>
+
+  </section>
+
+  <!-- ===============================================
+       Migration Complexity Scorer
+       =============================================== -->
+  <section id="migration-scorer" class="section" data-roles="data-engineer,data-architect,it-admin,business-leader">
+    <div class="section-header">
+      <div class="section-number">Migration</div>
+      <h2>🧭 Migration Complexity Scorer</h2>
+      <p class="section-subtitle">Answer 8 questions about your current environment to get a complexity estimate, risk assessment, and phased migration timeline.</p>
+    </div>
+
+    <div class="ms-inner"></div>
+
+    <div class="related-links">
+      <h4>📚 Related Resources</h4>
+      <a href="architecture.html">Architecture — Core Concepts →</a>
+      <a href="capacity-planning.html">Capacity Planning →</a>
+      <a href="operations.html#deployment">Operations — Deployment Pipelines →</a>
+    </div>
   </section>
 
 </main>
