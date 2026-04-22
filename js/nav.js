@@ -56,6 +56,7 @@ const pageSections = {
     { id: 'info-protection', title: 'Information Protection' },
     { id: 'network-security', title: 'Network Security' },
     { id: 'monitoring', title: 'Monitoring & Audit' },
+    { id: 'real-world', title: 'Real-World Example' },
     { id: 'checklist', title: 'Security Checklist' }
   ],
   'operations':     [
@@ -325,6 +326,7 @@ function initSearch() {
     { terms: 'sensitivity labels DLP information protection', href: 'security.html#info-protection', title: 'Information Protection', desc: 'Security → Info Protection' },
     { terms: 'Copilot AI security data boundaries DSPM', href: 'security.html#info-protection', title: 'AI & Copilot Security', desc: 'Security → Info Protection' },
     { terms: 'audit logs monitoring Defender MDCA SIEM Sentinel', href: 'security.html#monitoring', title: 'Security Monitoring', desc: 'Security → Monitoring' },
+    { terms: 'real world example scenario defense in depth all layers end to end use case', href: 'security.html#real-world', title: 'Security Example', desc: 'Security → Real-World Example' },
     { terms: 'conditional access MFA Entra ID zero trust', href: 'security.html#identity', title: 'Conditional Access', desc: 'Security → Identity' },
     { terms: 'workspace roles Admin Member Contributor Viewer', href: 'security.html#workspace', title: 'Workspace Roles', desc: 'Security → Workspace' },
     { terms: 'private endpoint VNet firewall DNS', href: 'networking.html#private-link', title: 'Private Endpoints', desc: 'Networking → Private Link' },

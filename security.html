@@ -56,7 +56,41 @@
     .sec-layer-card.l-monitor .sec-layer-num { color:var(--accent-purple); }
     .sec-layer-card.l-monitor .sec-layer-content { border-top:3px solid var(--accent-purple); }
 
-
+    /* Real-world scenario steps */
+    .scenario-steps { display:flex; flex-direction:column; gap:16px; margin:24px 0; }
+    .scenario-step { display:flex; gap:16px; align-items:flex-start; padding:18px 20px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color); border-left:4px solid var(--accent-blue); transition: transform 0.15s, box-shadow 0.15s; }
+    .scenario-step:hover { transform:translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    [data-theme="dark"] .scenario-step:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+    .scenario-step-badge { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; color:#fff; }
+    .scenario-step-body { flex:1; min-width:0; }
+    .scenario-step-layer { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:2px; }
+    .scenario-step-title { font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
+    .scenario-step-desc { font-size:13px; color:var(--text-secondary); line-height:1.5; }
+    .scenario-step-desc code { font-size:12px; background:var(--bg-primary); padding:1px 5px; border-radius:4px; }
+    .scenario-step.s-identity { border-left-color:var(--accent-blue); }
+    .scenario-step.s-identity .scenario-step-badge { background:var(--accent-blue); }
+    .scenario-step.s-identity .scenario-step-layer { color:var(--accent-blue); }
+    .scenario-step.s-workspace { border-left-color:var(--accent-cyan); }
+    .scenario-step.s-workspace .scenario-step-badge { background:var(--accent-cyan); }
+    .scenario-step.s-workspace .scenario-step-layer { color:var(--accent-cyan); }
+    .scenario-step.s-item { border-left-color:var(--accent-orange); }
+    .scenario-step.s-item .scenario-step-badge { background:var(--accent-orange); }
+    .scenario-step.s-item .scenario-step-layer { color:var(--accent-orange); }
+    .scenario-step.s-data { border-left-color:var(--accent-purple); }
+    .scenario-step.s-data .scenario-step-badge { background:var(--accent-purple); }
+    .scenario-step.s-data .scenario-step-layer { color:var(--accent-purple); }
+    .scenario-step.s-onelake { border-left-color:var(--accent-green); }
+    .scenario-step.s-onelake .scenario-step-badge { background:var(--accent-green); }
+    .scenario-step.s-onelake .scenario-step-layer { color:var(--accent-green); }
+    .scenario-step.s-info { border-left-color:var(--accent-red); }
+    .scenario-step.s-info .scenario-step-badge { background:var(--accent-red); }
+    .scenario-step.s-info .scenario-step-layer { color:var(--accent-red); }
+    .scenario-step.s-network { border-left-color:var(--accent-cyan); }
+    .scenario-step.s-network .scenario-step-badge { background:var(--accent-cyan); }
+    .scenario-step.s-network .scenario-step-layer { color:var(--accent-cyan); }
+    .scenario-step.s-monitor { border-left-color:var(--accent-purple); }
+    .scenario-step.s-monitor .scenario-step-badge { background:var(--accent-purple); }
+    .scenario-step.s-monitor .scenario-step-layer { color:var(--accent-purple); }
     /* Security checklist styles */
     .security-check-group { margin-bottom:24px; }
     .security-check-group h4 { margin-bottom:12px; display:flex; align-items:center; gap:8px; }
@@ -812,7 +846,152 @@ GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
   </section>
 
   <!-- ========================================================
-       SECTION 10: Security Checklist
+       SECTION 9: Real-World Example — All Layers Together
+       ======================================================== -->
+  <section id="real-world" class="section">
+    <div class="section-header">
+      <div class="section-number">Real-World Example</div>
+      <h2>Putting It All Together</h2>
+      <p class="section-subtitle">See how all 8 security layers work together in a real scenario — a multinational company deploying Fabric for regional sales analytics.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">📋 Scenario: Regional Sales Analytics Platform</div>
+      <p><strong>Contoso Corp</strong> has three sales regions — <strong>EMEA</strong>, <strong>Americas</strong>, and <strong>APAC</strong>. Regional analysts should only see their own region's data. A central analytics team needs full access. Customer PII (emails, phone numbers) must be masked for most users. The platform ingests data from an on-premises SQL Server via a gateway and must meet enterprise compliance requirements.</p>
+    </div>
+
+    <div class="scenario-steps">
+
+      <div class="scenario-step s-identity">
+        <div class="scenario-step-badge">🔐</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 1 — Identity & Access</div>
+          <div class="scenario-step-title">Entra ID groups + Conditional Access</div>
+          <div class="scenario-step-desc">
+            Create security groups: <code>SG-Sales-EMEA</code>, <code>SG-Sales-Americas</code>, <code>SG-Sales-APAC</code>, and <code>SG-Analytics-Central</code>.
+            Apply a Conditional Access policy requiring <strong>MFA</strong> for all Fabric access and blocking sign-ins from non-compliant devices.
+            Create a service principal <code>SP-Sales-ETL</code> for automated data pipelines — no interactive user required.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-workspace">
+        <div class="scenario-step-badge">🏢</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 2 — Workspace Security</div>
+          <div class="scenario-step-title">Dev/Prod isolation with role separation</div>
+          <div class="scenario-step-desc">
+            Create two workspaces: <code>Sales-Dev</code> and <code>Sales-Prod</code>. The central analytics team gets <strong>Contributor</strong> on both.
+            Regional groups get <strong>Viewer</strong> on Prod only — they never see Dev. The ETL service principal gets <strong>Contributor</strong> on Prod for automated loads.
+            Both workspaces are assigned to the <strong>"Sales" domain</strong> for governance and to a <strong>dedicated F64 capacity</strong> to prevent noisy-neighbor issues.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-item">
+        <div class="scenario-step-badge">📦</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 3 — Item-Level Permissions</div>
+          <div class="scenario-step-title">Targeted sharing via Power BI apps</div>
+          <div class="scenario-step-desc">
+            Publish a <strong>Power BI app</strong> "Regional Sales Dashboard" with audience targeting — each regional group sees only their designated report pages.
+            Share the <strong>Sales Lakehouse</strong> with <code>ReadData</code> permission to the data science team for ad-hoc SQL queries, without granting workspace access.
+            All production semantic models carry the <strong>"Certified"</strong> endorsement badge.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-data">
+        <div class="scenario-step-badge">🛡️</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 4 — Data-Level Security</div>
+          <div class="scenario-step-title">RLS + CLS + Dynamic Data Masking</div>
+          <div class="scenario-step-desc">
+            <strong>Row-Level Security:</strong> DAX filter on the semantic model — <code>[Region] = USERPRINCIPALNAME()</code> mapped via a security table, so EMEA analysts see only EMEA rows.<br>
+            <strong>Column-Level Security:</strong> The <code>ProfitMargin</code> column is restricted — only <code>SG-Analytics-Central</code> can see it.<br>
+            <strong>Dynamic Data Masking:</strong> <code>CustomerEmail</code> shows as <code>jXXX@XXX.com</code> for regional analysts; the central team sees full values.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-onelake">
+        <div class="scenario-step-badge">💾</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 5 — OneLake Security</div>
+          <div class="scenario-step-title">Folder-level RBAC on the lakehouse</div>
+          <div class="scenario-step-desc">
+            Define <strong>OneLake data access roles</strong> on the Sales Lakehouse:
+            The <code>/raw/</code> folder (landing zone with unmasked PII) is restricted to <code>SP-Sales-ETL</code> only.
+            The <code>/curated/</code> folder is accessible to all analyst groups (with RLS still enforced at the query layer).
+            This ensures even users with SQL endpoint access or Spark notebooks <strong>cannot read raw files directly</strong>.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-info">
+        <div class="scenario-step-badge">🏷️</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 6 — Information Protection</div>
+          <div class="scenario-step-title">Sensitivity labels + DLP policies</div>
+          <div class="scenario-step-desc">
+            Apply <strong>"Confidential — PII"</strong> sensitivity label to the Sales Lakehouse and semantic model. This label auto-inherits downstream to reports and exports.
+            A <strong>DLP policy</strong> in Microsoft Purview blocks exporting labeled data to unmanaged devices and triggers an alert if anyone attempts to download more than 1,000 PII records in a single export.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-network">
+        <div class="scenario-step-badge">🌐</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 7 — Network Security</div>
+          <div class="scenario-step-title">Private Link + Managed VNet</div>
+          <div class="scenario-step-desc">
+            The on-premises SQL Server source connects via an <strong>on-premises data gateway</strong> behind <strong>Azure Private Link</strong> — no data crosses the public internet.
+            Spark notebooks run inside a <strong>managed virtual network</strong> with a private endpoint to Azure SQL for staging data.
+            <strong>Trusted workspace access</strong> is enabled so the Sales workspace can access a secured Azure Data Lake Storage account via its workspace identity.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step s-monitor">
+        <div class="scenario-step-badge">📊</div>
+        <div class="scenario-step-body">
+          <div class="scenario-step-layer">Layer 8 — Monitoring & Audit</div>
+          <div class="scenario-step-title">Continuous auditing + alerting</div>
+          <div class="scenario-step-desc">
+            <strong>Audit logs</strong> are streamed to a Log Analytics workspace for 90-day retention and SOC queries.
+            <strong>Microsoft Defender for Cloud Apps</strong> monitors session activity — an alert fires if any user exports more than 500 rows from a Confidential-labeled dataset.
+            The Fabric <strong>admin monitoring workspace</strong> tracks capacity utilization, and a weekly Purview scan verifies all PII items still carry the correct sensitivity label.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">💡 Key Takeaway</div>
+      <p>No single layer is sufficient on its own. An EMEA analyst in this scenario is protected by: <strong>identity</strong> (MFA + group membership) → <strong>workspace</strong> (Viewer role, Prod only) → <strong>item</strong> (app audience) → <strong>data</strong> (RLS filters EMEA rows, CLS hides margins, DDM masks email) → <strong>OneLake</strong> (no raw folder access) → <strong>labels</strong> (export restrictions) → <strong>network</strong> (private connectivity) → <strong>monitoring</strong> (anomaly alerts). Compromise of any one layer still leaves 7 others enforcing protection.</p>
+    </div>
+
+    <h3>Quick Reference</h3>
+    <div class="table-responsive">
+      <table class="comparison-table">
+        <thead><tr><th>Layer</th><th>Contoso Config</th><th>Protects Against</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Identity</strong></td><td>Entra groups, CA + MFA, SPN for ETL</td><td>Unauthorized access, credential theft</td></tr>
+          <tr><td><strong>Workspace</strong></td><td>Dev/Prod split, Viewer for regions</td><td>Accidental edits, environment leakage</td></tr>
+          <tr><td><strong>Item Permissions</strong></td><td>App audiences, ReadData sharing</td><td>Over-sharing, uncontrolled discovery</td></tr>
+          <tr><td><strong>Data Security</strong></td><td>RLS by region, CLS on margins, DDM on email</td><td>Cross-region data leakage, PII exposure</td></tr>
+          <tr><td><strong>OneLake</strong></td><td>/raw/ ETL-only, /curated/ for analysts</td><td>Direct file access bypassing query-layer controls</td></tr>
+          <tr><td><strong>Info Protection</strong></td><td>Confidential label, DLP export block</td><td>Data exfiltration, unmanaged device risk</td></tr>
+          <tr><td><strong>Network</strong></td><td>Private Link, managed VNet, trusted access</td><td>Man-in-the-middle, public internet exposure</td></tr>
+          <tr><td><strong>Monitoring</strong></td><td>Log Analytics, Defender alerts, Purview scans</td><td>Undetected breaches, compliance drift</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========================================================
        ======================================================== -->
   <section id="checklist" class="section">
     <div class="section-header">
