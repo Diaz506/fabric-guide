@@ -17,6 +17,8 @@ function initMain() {
   if (document.querySelector('.checklist-item')) initChecklist();
   if (document.querySelector('.code-copy-btn')) initCopyButtons();
   if (document.getElementById('datamesh-svg')) initDataMesh();
+  if (document.getElementById('hero-search-input')) initHeroSearch();
+  if (document.getElementById('topic-groups')) initTopicIndex();
 }
 
 /* --- Sidebar Navigation --- */
@@ -343,4 +345,214 @@ function initDataMesh() {
       particleGroup.appendChild(particle);
     });
   }
+}
+
+/* --- Hero Search (shared logic with sidebar search) --- */
+function initHeroSearch() {
+  const input = document.getElementById('hero-search-input');
+  const resultsEl = document.getElementById('hero-search-results');
+  const wrapper = document.getElementById('hero-search-bar');
+  if (!input || !resultsEl) return;
+
+  function getSearchIndex() {
+    return window.__searchIndex || [];
+  }
+
+  let selectedIdx = -1;
+
+  function doSearch(query) {
+    const idx = getSearchIndex();
+    if (!query || query.length < 2 || idx.length === 0) {
+      resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
+      resultsEl.innerHTML = '';
+      selectedIdx = -1;
+      return;
+    }
+
+    const q = query.toLowerCase();
+    const words = q.split(/\s+/);
+    const scored = [];
+
+    idx.forEach(item => {
+      const haystack = (item.title + ' ' + item.desc + ' ' + (item.terms || '')).toLowerCase();
+      let score = 0;
+      words.forEach(w => { if (haystack.includes(w)) score++; });
+      if (item.title.toLowerCase().includes(q)) score += 3;
+      if (score > 0) scored.push({ ...item, score });
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    const top = scored.slice(0, 8);
+
+    if (top.length === 0) {
+      resultsEl.innerHTML = '<div class="search-no-results">No results found</div>';
+      resultsEl.classList.add('visible');
+      wrapper.setAttribute('aria-expanded', 'true');
+      selectedIdx = -1;
+      return;
+    }
+
+    resultsEl.innerHTML = top.map((r, i) => {
+      const icon = r.type === 'page' ? '📄' : r.type === 'section' ? '§' : '🔑';
+      return `<a href="${r.href}" class="search-result-item" role="option" id="hero-search-opt-${i}" data-idx="${i}">${icon} <strong>${r.title}</strong><span>${r.desc}</span></a>`;
+    }).join('');
+    resultsEl.classList.add('visible');
+    wrapper.setAttribute('aria-expanded', 'true');
+    selectedIdx = -1;
+  }
+
+  function updateSelected() {
+    const items = resultsEl.querySelectorAll('.search-result-item');
+    items.forEach((el, i) => el.classList.toggle('selected', i === selectedIdx));
+    if (selectedIdx >= 0 && items[selectedIdx]) {
+      items[selectedIdx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  input.addEventListener('input', () => doSearch(input.value.trim()));
+
+  input.addEventListener('keydown', (e) => {
+    const items = resultsEl.querySelectorAll('.search-result-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIdx = Math.min(selectedIdx + 1, items.length - 1);
+      updateSelected();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIdx = Math.max(selectedIdx - 1, 0);
+      updateSelected();
+    } else if (e.key === 'Enter' && selectedIdx >= 0 && items[selectedIdx]) {
+      e.preventDefault();
+      window.location.href = items[selectedIdx].href;
+    } else if (e.key === 'Escape') {
+      input.blur();
+      resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
+      selectedIdx = -1;
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
+      selectedIdx = -1;
+    }
+  });
+
+  // Ctrl+K focuses hero search on homepage (overrides sidebar)
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+}
+
+/* --- Topic Index (grouped by category) --- */
+function initTopicIndex() {
+  const container = document.getElementById('topic-groups');
+  const filterBar = document.getElementById('topic-filter-bar');
+  if (!container || !filterBar) return;
+  if (typeof pageSections === 'undefined' || typeof pageCategories === 'undefined') return;
+
+  const categoryMeta = {
+    'architecture':       { label: 'Architecture',         icon: '🏗️' },
+    'security':           { label: 'Security',             icon: '🔐' },
+    'networking':         { label: 'Networking',           icon: '🌐' },
+    'engineering':        { label: 'Engineering',          icon: '🔧' },
+    'analytics':          { label: 'Power BI & Analytics', icon: '⚡' },
+    'ai':                 { label: 'AI & Copilot',         icon: '🤖' },
+    'operations':         { label: 'Operations',           icon: '🚀' },
+    'data-integration':   { label: 'Data Integration',     icon: '📦' },
+    'overview':           { label: 'Getting Started',      icon: '📋' }
+  };
+
+  const pageNameMap = {
+    'home': 'Home', 'checklist': 'Checklist', 'architecture': 'Architecture',
+    'governance': 'Governance', 'security': 'Security', 'networking': 'Networking', 'best-practices': 'Best Practices',
+    'operations': 'Operations', 'capacity-planning': 'Capacity Planning',
+    'data-integration': 'Data Integration', 'data-mesh': 'Data Mesh',
+    'fabric-iq': 'Fabric IQ', 'scenarios': 'Scenarios',
+    'useful-links': 'Useful Links', 'whats-new': "What's New", 'playground': 'Playground'
+  };
+
+  const pageHrefMap = {
+    'home': 'index.html', 'checklist': 'checklist.html', 'architecture': 'architecture.html',
+    'governance': 'governance.html', 'security': 'security.html', 'networking': 'networking.html',
+    'best-practices': 'best-practices.html', 'operations': 'operations.html',
+    'capacity-planning': 'capacity-planning.html', 'data-integration': 'data-integration.html',
+    'data-mesh': 'data-mesh.html', 'fabric-iq': 'fabric-iq.html', 'scenarios': 'scenarios.html',
+    'useful-links': 'useful-links.html', 'whats-new': 'whats-new.html', 'playground': 'playground.html'
+  };
+
+  // Skip utility pages from topic index
+  const skipPages = new Set(['home', 'useful-links', 'whats-new', 'playground']);
+
+  // Build grouped data
+  const groups = {};
+  Object.entries(pageSections).forEach(([pageId, sections]) => {
+    if (skipPages.has(pageId)) return;
+    const defaultCat = pageCategories[pageId] || 'overview';
+
+    sections.forEach(sec => {
+      const cat = sec.category || defaultCat;
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push({
+        title: sec.title,
+        href: pageHrefMap[pageId] + '#' + sec.id,
+        page: pageNameMap[pageId] || pageId
+      });
+    });
+  });
+
+  const catOrder = ['architecture', 'security', 'networking', 'engineering', 'analytics', 'ai', 'operations', 'data-integration', 'overview'];
+  const activeCats = catOrder.filter(c => groups[c] && groups[c].length > 0);
+
+  let activeFilter = 'all';
+
+  function render() {
+    const catsToShow = activeFilter === 'all' ? activeCats : [activeFilter];
+    container.innerHTML = catsToShow.map(cat => {
+      const meta = categoryMeta[cat] || { label: cat, icon: '📄' };
+      const items = groups[cat];
+      return `<div class="topic-group" data-category="${cat}">
+        <div class="topic-group-title">${meta.icon} ${meta.label}</div>
+        <div class="topic-group-items">
+          ${items.map(item =>
+            `<a href="${item.href}" class="topic-item">
+              <span>${item.title}</span>
+              <span class="topic-item-page">${item.page}</span>
+            </a>`
+          ).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Build filter bar
+  filterBar.innerHTML = `<button class="topic-filter-tag active" data-filter="all" aria-pressed="true">All Topics</button>` +
+    activeCats.map(cat => {
+      const meta = categoryMeta[cat] || { label: cat, icon: '📄' };
+      return `<button class="topic-filter-tag" data-filter="${cat}" aria-pressed="false">${meta.icon} ${meta.label}</button>`;
+    }).join('');
+
+  filterBar.setAttribute('role', 'toolbar');
+  filterBar.setAttribute('aria-label', 'Filter topics by category');
+
+  filterBar.addEventListener('click', (e) => {
+    const tag = e.target.closest('.topic-filter-tag');
+    if (!tag) return;
+    activeFilter = tag.dataset.filter;
+    filterBar.querySelectorAll('.topic-filter-tag').forEach(t => {
+      const isActive = t.dataset.filter === activeFilter;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-pressed', isActive);
+    });
+    render();
+  });
+
+  render();
 }

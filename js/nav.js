@@ -3,10 +3,33 @@
    Injects header + sidebar into every page
    ============================================ */
 
+const LAST_DEPLOYED = '2026-04-21';
+
 // Section index for each page (used for TOC + search)
+// Each page has a defaultCategory; sections can override with `category`
+const pageCategories = {
+  'home':           'overview',
+  'checklist':      'overview',
+  'architecture':   'architecture',
+  'governance':     'security',
+  'security':       'security',
+  'networking':     'networking',
+  'best-practices': 'engineering',
+  'operations':     'operations',
+  'capacity-planning': 'operations',
+  'data-integration':  'data-integration',
+  'data-mesh':      'architecture',
+  'fabric-iq':      'ai',
+  'scenarios':      'architecture',
+  'useful-links':   'overview',
+  'whats-new':      'overview',
+  'playground':     'overview'
+};
+
 const pageSections = {
   'home':           [
     { id: 'introduction', title: 'Introduction to Microsoft Fabric' },
+    { id: 'topic-index', title: 'Browse by Topic' },
     { id: 'pages', title: 'Explore the Guide' },
     { id: 'journey', title: 'Find Your Path by Role' },
     { id: 'arch-decision', title: 'Architecture Decision Wizard' },
@@ -15,7 +38,7 @@ const pageSections = {
   'architecture':   [
     { id: 'architecture', title: 'Core Architecture' },
     { id: 'medallion', title: 'Medallion Architecture' },
-    { id: 'real-time', title: 'Real-Time Intelligence' }
+    { id: 'real-time', title: 'Real-Time Intelligence', category: 'analytics' }
   ],
   'governance':     [
     { id: 'governance', title: 'Governance' },
@@ -23,14 +46,28 @@ const pageSections = {
     { id: 'governance-first', title: 'Governance Assessment' },
     { id: 'governance-first-guide', title: 'Governance-First Guide' }
   ],
+  'security':       [
+    { id: 'overview', title: 'Defense-in-Depth Model' },
+    { id: 'identity', title: 'Identity & Access' },
+    { id: 'workspace', title: 'Workspace Security' },
+    { id: 'item-security', title: 'Item-Level Permissions' },
+    { id: 'data-security', title: 'Data-Level Security' },
+    { id: 'onelake-security', title: 'OneLake Security' },
+    { id: 'info-protection', title: 'Information Protection' },
+    { id: 'network-security', title: 'Network Security' },
+    { id: 'monitoring', title: 'Monitoring & Audit' },
+    { id: 'checklist', title: 'Security Checklist' }
+  ],
   'operations':     [
     { id: 'deployment', title: 'Deployment Patterns' },
     { id: 'migration', title: 'Migration Strategies' }
   ],
   'best-practices': [
     { id: 'engineering', title: 'Data Engineering Best Practices' },
-    { id: 'realtime', title: 'Real-Time Analytics' },
-    { id: 'powerbi', title: 'Power BI Integration' }
+    { id: 'realtime', title: 'Real-Time Analytics', category: 'analytics' },
+    { id: 'powerbi', title: 'Power BI Integration', category: 'analytics' },
+    { id: 'data-for-ai', title: 'Preparing Data for AI', category: 'ai' },
+    { id: 'migration-scorer', title: 'Migration Complexity Scorer', category: 'operations' }
   ],
   'data-mesh':      [
     { id: 'datamesh', title: 'Data Mesh Architecture' }
@@ -39,13 +76,13 @@ const pageSections = {
     { id: 'fabric-iq', title: 'Microsoft Fabric IQ' },
     { id: 'what-is', title: 'What is Fabric IQ?' },
     { id: 'core-components', title: 'Core Components' },
-    { id: 'architecture', title: 'Architecture' },
+    { id: 'architecture', title: 'Architecture', category: 'architecture' },
     { id: 'ontology', title: 'Ontology' },
     { id: 'ai-agents', title: 'AI Agents' },
-    { id: 'realtime', title: 'Real-Time Intelligence' },
-    { id: 'governance', title: 'Governance' },
+    { id: 'realtime', title: 'Real-Time Intelligence', category: 'analytics' },
+    { id: 'governance', title: 'Governance', category: 'security' },
     { id: 'fabcon-updates', title: 'FabCon 2026 Updates' },
-    { id: 'connected-data', title: 'Connected Data Estates' },
+    { id: 'connected-data', title: 'Connected Data Estates', category: 'data-integration' },
     { id: 'ecosystem', title: 'IQ Ecosystem' },
     { id: 'getting-started', title: 'Getting Started' }
   ],
@@ -69,6 +106,7 @@ const pageSections = {
     { id: 'scenarios', title: 'Customer Scenario Templates' }
   ],
   'whats-new':      [
+    { id: 'fabcon-2026', title: 'FabCon 2026 News' },
     { id: 'whats-new', title: 'What\'s New' }
   ],
   'playground':     [
@@ -76,6 +114,7 @@ const pageSections = {
   ],
   'capacity-planning': [
     { id: 'costs', title: 'Capacity & Cost Management' },
+    { id: 'surge-protection', title: 'Surge Protection' },
     { id: 'sizing', title: 'Capacity Sizing Guide' },
     { id: 'tco-calculator', title: 'TCO / ROI Calculator' }
   ],
@@ -96,8 +135,10 @@ function getNav(activePage) {
       icon: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>' },
     { id: 'architecture',    href: 'architecture.html',   label: 'Architecture',            group: 'Learn',
       icon: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>' },
-    { id: 'governance',      href: 'governance.html',     label: 'Governance & Security',   group: 'Learn',
+    { id: 'governance',      href: 'governance.html',     label: 'Governance',              group: 'Learn',
       icon: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' },
+    { id: 'security',        href: 'security.html',       label: 'Security',                group: 'Learn',
+      icon: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg>' },
     { id: 'networking',      href: 'networking.html',     label: 'Networking Security',     group: 'Learn',
       icon: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="3"/></svg>' },
     { id: 'best-practices',  href: 'best-practices.html', label: 'Best Practices',          group: 'Build',
@@ -159,11 +200,11 @@ function injectNav(activePage) {
     <a href="index.html" class="header-logo">
       <span>Fabric Guide <span class="subtitle">Implementation Best Practices</span></span>
     </a>
-    <div class="search-wrapper" id="search-wrapper">
+    <div class="search-wrapper" id="search-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="search-results">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="search-input" class="search-input" placeholder="Search guide…" autocomplete="off" />
+      <input type="text" id="search-input" class="search-input" placeholder="Search guide…" autocomplete="off" role="searchbox" aria-autocomplete="list" aria-controls="search-results" />
       <kbd class="search-kbd">Ctrl+K</kbd>
-      <div id="search-results" class="search-results"></div>
+      <div id="search-results" class="search-results" role="listbox" aria-label="Search results"></div>
     </div>
     <div class="header-controls">
       <button class="header-btn" id="dark-mode-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
@@ -202,7 +243,14 @@ function injectNav(activePage) {
   footer.className = 'site-footer';
   footer.innerHTML = `
     <div class="footer-content">
-      <p>Created by <a href="https://www.linkedin.com/in/diegodiazrodriguez/" target="_blank" rel="noopener"><strong>Diego Diaz Rodriguez</strong></a> · Built with <a href="https://github.com/features/copilot/cli/" target="_blank" rel="noopener">GitHub Copilot CLI</a> powered by Claude Opus 4.6 · 2026</p>
+      <p class="footer-disclaimer">⚠️ This is a personal project, not an official Microsoft resource. Views and recommendations are my own and do not represent Microsoft.</p>
+      <p>Created by <a href="https://www.linkedin.com/in/diegodiazrodriguez/" target="_blank" rel="noopener"><strong>Diego Diaz Rodriguez</strong></a> · Built with <a href="https://github.com/features/copilot/cli/" target="_blank" rel="noopener">GitHub Copilot CLI</a> powered by Claude Opus 4.6 · Last updated: ${LAST_DEPLOYED}</p>
+      <div class="footer-share">
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://fabric.diazlabs.xyz/')}" target="_blank" rel="noopener" class="share-btn share-linkedin" aria-label="Share on LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Share on LinkedIn
+        </a>
+      </div>
     </div>`;
 
   // Insert into DOM
@@ -213,6 +261,14 @@ function injectNav(activePage) {
   document.body.prepend(sidebar);
   document.body.prepend(overlay);
   document.body.prepend(header);
+
+  // Populate hero last-updated badge on index page
+  const heroBadge = document.getElementById('hero-last-updated');
+  if (heroBadge) {
+    const d = new Date(LAST_DEPLOYED + 'T00:00:00');
+    const formatted = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    heroBadge.appendChild(document.createTextNode(formatted));
+  }
 
   // Init search
   initSearch();
@@ -231,9 +287,10 @@ function initSearch() {
     { id: 'home', href: 'index.html', title: 'Home', desc: 'Landing page with role-based journeys and guide overview' },
     { id: 'checklist', href: 'checklist.html', title: 'Getting Started', desc: 'Interactive adoption checklist for Fabric implementation' },
     { id: 'architecture', href: 'architecture.html', title: 'Architecture', desc: 'Core concepts, OneLake, workspaces, capacities, medallion pattern, real-time intelligence' },
-    { id: 'governance', href: 'governance.html', title: 'Governance & Security', desc: 'Purview, sensitivity labels, workspace roles, RLS, CLS, endorsement, domains' },
+    { id: 'governance', href: 'governance.html', title: 'Governance', desc: 'Purview, sensitivity labels, endorsement, domains, data quality, governance assessment' },
+    { id: 'security', href: 'security.html', title: 'Security', desc: 'Defense-in-depth, identity, workspace roles, RLS, CLS, OLS, DDM, OneLake RBAC, information protection, monitoring, audit' },
     { id: 'networking', href: 'networking.html', title: 'Networking Security', desc: 'Private Link, managed private endpoints, managed VNet, VNet data gateways, zero-trust, conditional access' },
-    { id: 'best-practices', href: 'best-practices.html', title: 'Best Practices', desc: 'Data engineering, Spark optimization, real-time analytics, Eventhouse, Power BI Direct Lake, star schema' },
+    { id: 'best-practices', href: 'best-practices.html', title: 'Best Practices', desc: 'Data engineering, Spark optimization, real-time analytics, Eventhouse, Power BI Direct Lake, AI data preparation, Copilot, data agents' },
     { id: 'operations', href: 'operations.html', title: 'Operations', desc: 'CI/CD, fabric-cicd, deployment pipelines, Git integration, and migration strategies' },
     { id: 'capacity-planning', href: 'capacity-planning.html', title: 'Capacity Planning', desc: 'Capacity sizing, SKU selection, cost optimization, CU smoothing and throttling, TCO/ROI calculator' },
     { id: 'data-mesh', href: 'data-mesh.html', title: 'Data Mesh', desc: 'Domain ownership, data products, federated governance, OneLake shortcuts, interactive diagram' },
@@ -259,13 +316,22 @@ function initSearch() {
     { terms: 'medallion bronze silver gold layers', href: 'architecture.html#medallion', title: 'Medallion Architecture', desc: 'Architecture → Medallion' },
     { terms: 'eventhouse KQL kusto streaming eventstreams', href: 'architecture.html#real-time', title: 'Real-Time Intelligence', desc: 'Architecture → Real-Time' },
     { terms: 'Purview sensitivity labels compliance', href: 'governance.html#governance', title: 'Microsoft Purview', desc: 'Governance' },
-    { terms: 'RLS CLS row level column level security', href: 'governance.html#security', title: 'Row & Column Level Security', desc: 'Governance → Security' },
+    { terms: 'RLS CLS row level column level security', href: 'security.html#data-security', title: 'Row & Column Level Security', desc: 'Security → Data-Level' },
+    { terms: 'OLS object level security hide tables', href: 'security.html#data-security', title: 'Object-Level Security', desc: 'Security → Data-Level' },
+    { terms: 'dynamic data masking DDM mask PII', href: 'security.html#data-security', title: 'Dynamic Data Masking', desc: 'Security → Data-Level' },
+    { terms: 'OneLake RBAC folder table data access roles', href: 'security.html#onelake-security', title: 'OneLake Security', desc: 'Security → OneLake' },
+    { terms: 'workspace identity managed identity service principal', href: 'security.html#identity', title: 'Identity & Access', desc: 'Security → Identity' },
+    { terms: 'sensitivity labels DLP information protection', href: 'security.html#info-protection', title: 'Information Protection', desc: 'Security → Info Protection' },
+    { terms: 'Copilot AI security data boundaries DSPM', href: 'security.html#info-protection', title: 'AI & Copilot Security', desc: 'Security → Info Protection' },
+    { terms: 'audit logs monitoring Defender MDCA SIEM Sentinel', href: 'security.html#monitoring', title: 'Security Monitoring', desc: 'Security → Monitoring' },
+    { terms: 'conditional access MFA Entra ID zero trust', href: 'security.html#identity', title: 'Conditional Access', desc: 'Security → Identity' },
+    { terms: 'workspace roles Admin Member Contributor Viewer', href: 'security.html#workspace', title: 'Workspace Roles', desc: 'Security → Workspace' },
     { terms: 'private endpoint VNet firewall DNS', href: 'networking.html#private-link', title: 'Private Endpoints', desc: 'Networking → Private Link' },
     { terms: 'managed private endpoints MPE outbound', href: 'networking.html#managed-pe', title: 'Managed Private Endpoints', desc: 'Networking → MPE' },
     { terms: 'Spark notebooks Delta Lake optimization V-Order', href: 'best-practices.html#engineering', title: 'Spark & Delta Lake', desc: 'Best Practices → Data Engineering' },
     { terms: 'Direct Lake Power BI semantic model', href: 'best-practices.html#powerbi', title: 'Direct Lake Mode', desc: 'Best Practices → Power BI' },
     { terms: 'fabric-cicd Python library CI CD GitHub Actions', href: 'operations.html#deployment', title: 'CI/CD with fabric-cicd', desc: 'Operations → Deployment' },
-    { terms: 'capacity sizing SKU estimator CU throttling', href: 'operations.html#sizing', title: 'Capacity Sizing', desc: 'Operations → Sizing' },
+    { terms: 'capacity sizing SKU estimator CU throttling', href: 'capacity-planning.html#sizing', title: 'Capacity Sizing', desc: 'Capacity Planning → Sizing' },
     { terms: 'migration Synapse ADF Power BI Premium', href: 'operations.html#migration', title: 'Migration Strategies', desc: 'Operations → Migration' },
     { terms: 'data mesh domain ownership data products', href: 'data-mesh.html#datamesh', title: 'Data Mesh', desc: 'Data Mesh → Architecture' },
     { terms: 'shortcuts OneLake ADLS S3 GCS zero-copy virtualization cross-domain', href: 'data-integration.html#shortcuts', title: 'OneLake Shortcuts', desc: 'Data Integration → Shortcuts' },
@@ -274,17 +340,24 @@ function initSearch() {
     { terms: 'data pipelines orchestration copy activity ADF scheduling', href: 'data-integration.html#pipelines', title: 'Data Pipelines', desc: 'Data Integration → Pipelines' },
     { terms: 'Fabric IQ ontology agents intelligence', href: 'fabric-iq.html#fabric-iq', title: 'Fabric IQ', desc: 'Fabric IQ → Intelligence Layer' },
     { terms: 'conditional access Entra MFA device compliance', href: 'networking.html#conditional-access', title: 'Conditional Access', desc: 'Networking → Identity' },
-    { terms: 'cost optimization reservation pause resume pricing', href: 'operations.html#costs', title: 'Cost Management', desc: 'Operations → Costs' }
+    { terms: 'cost optimization reservation pause resume pricing', href: 'capacity-planning.html#costs', title: 'Cost Management', desc: 'Capacity Planning → Costs' },
+    { terms: 'surge protection background rejection recovery threshold workspace CU limit mission critical blocking overload', href: 'capacity-planning.html#surge-protection', title: 'Surge Protection', desc: 'Capacity Planning → Surge Protection' },
+    { terms: 'migration complexity scorer assessment risk phases duration', href: 'best-practices.html#migration-scorer', title: 'Migration Scorer', desc: 'Best Practices → Migration Scorer' },
+    { terms: 'Copilot AI data preparation prep semantic model verified answers AI instructions AI schema data agent agents NL2SQL NL2DAX prompt engineering', href: 'best-practices.html#data-for-ai', title: 'Preparing Data for AI', desc: 'Best Practices → Data for AI' }
   ];
   keywords.forEach(kw => {
     searchIndex.push({ type: 'keyword', title: kw.title, desc: kw.desc, href: kw.href, terms: kw.terms });
   });
+
+  // Expose search index globally for hero search
+  window.__searchIndex = searchIndex;
 
   let selectedIdx = -1;
 
   function doSearch(query) {
     if (!query || query.length < 2) {
       resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
       resultsEl.innerHTML = '';
       selectedIdx = -1;
       return;
@@ -316,9 +389,10 @@ function initSearch() {
 
     resultsEl.innerHTML = top.map((r, i) => {
       const icon = r.type === 'page' ? '📄' : r.type === 'section' ? '§' : '🔑';
-      return `<a href="${r.href}" class="search-result-item" data-idx="${i}">${icon} <strong>${r.title}</strong><span>${r.desc}</span></a>`;
+      return `<a href="${r.href}" class="search-result-item" role="option" id="search-opt-${i}" data-idx="${i}">${icon} <strong>${r.title}</strong><span>${r.desc}</span></a>`;
     }).join('');
     resultsEl.classList.add('visible');
+    wrapper.setAttribute('aria-expanded', 'true');
     selectedIdx = -1;
   }
 
@@ -348,6 +422,7 @@ function initSearch() {
     } else if (e.key === 'Escape') {
       input.blur();
       resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
       selectedIdx = -1;
     }
   });
@@ -356,6 +431,7 @@ function initSearch() {
   document.addEventListener('click', (e) => {
     if (!wrapper.contains(e.target)) {
       resultsEl.classList.remove('visible');
+      wrapper.setAttribute('aria-expanded', 'false');
       selectedIdx = -1;
     }
   });

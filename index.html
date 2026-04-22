@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/">
   <title>Microsoft Fabric — Implementation Best Practices Guide</title>
   <meta name="description" content="A comprehensive guide to Microsoft Fabric best practices: architecture, governance, security, data mesh, migration, and more. Find your role-based learning path.">
   <meta property="og:title" content="Microsoft Fabric — Implementation Best Practices Guide">
@@ -10,10 +11,37 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Microsoft Fabric — Implementation Best Practices Guide">
   <meta name="twitter:description" content="A comprehensive guide to Microsoft Fabric best practices: architecture, governance, security, data mesh, migration, and more. Find your role-based learning path.">
   <link rel="stylesheet" href="css/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Microsoft Fabric Best Practices Guide",
+    "url": "https://fabric.diazlabs.xyz/",
+    "description": "A comprehensive guide to Microsoft Fabric best practices: architecture, governance, security, data mesh, migration, and more.",
+    "author": {
+      "@type": "Person",
+      "name": "Diego Diaz Rodriguez",
+      "url": "https://www.linkedin.com/in/diegodiazrodriguez/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fabric Guide"
+    },
+    "inLanguage": ["en", "es"],
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://fabric.diazlabs.xyz/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
 </head>
 <body>
@@ -24,11 +52,19 @@
   <div class="hero">
     <h1>Microsoft Fabric Best Practices</h1>
     <p class="tagline">Your comprehensive guide to implementing Microsoft Fabric — from architecture design to production deployment. Built for data engineers, architects, and decision makers.</p>
+    <p class="hero-disclaimer">This is a personal project — not an official Microsoft resource. All views and recommendations are my own.</p>
+    <div class="hero-search-bar" id="hero-search-bar" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="hero-search-results">
+      <svg class="hero-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="hero-search-input" class="hero-search-input" placeholder="Search topics — e.g. &quot;Direct Lake&quot;, &quot;RLS&quot;, &quot;Copilot&quot;…" autocomplete="off" role="searchbox" aria-autocomplete="list" aria-controls="hero-search-results" />
+      <kbd class="hero-search-kbd">Ctrl+K</kbd>
+      <div id="hero-search-results" class="search-results hero-search-results" role="listbox" aria-label="Search results"></div>
+    </div>
     <div class="hero-badges">
-      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Updated 2026</span>
-      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 10 Topic Areas</span>
+      <span class="badge" id="hero-last-updated"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Last Updated: </span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 13 Topic Areas</span>
       <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> Role-Based Journeys</span>
     </div>
+
   </div>
 
   <!-- ======== Introduction to Microsoft Fabric ======== -->
@@ -100,6 +136,17 @@
     </div>
   </section>
 
+  <!-- ======== Topic Index ======== -->
+  <section class="section" id="topic-index">
+    <div class="section-header">
+      <div class="section-number">Quick Find</div>
+      <h2>Browse by Topic</h2>
+      <p class="section-subtitle">Jump directly to any topic. Filter by category or click to navigate.</p>
+    </div>
+    <div class="topic-filter-bar" id="topic-filter-bar"></div>
+    <div class="topic-groups" id="topic-groups"></div>
+  </section>
+
   <!-- ======== Pages Overview ======== -->
   <section class="section" id="pages">
     <div class="section-header">
@@ -129,8 +176,16 @@
         <div class="card-icon" style="color: var(--accent-green);">
           <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 32s12-6 12-15V7l-12-4.5L6 7v10c0 9 12 15 12 15z"/></svg>
         </div>
-        <h4>3. Governance & Security</h4>
-        <p>Purview integration, sensitivity labels, workspace roles, RLS/CLS, and network security.</p>
+        <h4>3. Governance</h4>
+        <p>Purview integration, sensitivity labels, endorsement, domains, and data quality.</p>
+        <span class="page-nav-sections">Learn</span>
+      </a>
+      <a href="security.html" class="card page-nav-card">
+        <div class="card-icon" style="color: var(--accent-purple);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="16" width="24" height="16" rx="3"/><path d="M11 16V11a7 7 0 0114 0v5"/><circle cx="18" cy="24" r="2"/></svg>
+        </div>
+        <h4>4. Security</h4>
+        <p>Defense-in-depth: identity, workspace roles, RLS/CLS, OneLake RBAC, DLP, and monitoring.</p>
         <span class="page-nav-sections">Learn</span>
       </a>
       <a href="networking.html" class="card page-nav-card">
@@ -146,7 +201,7 @@
           <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2"><polyline points="24 27 33 18 24 9"/><polyline points="12 9 3 18 12 27"/></svg>
         </div>
         <h4>5. Best Practices</h4>
-        <p>Data engineering, Spark optimization, real-time analytics with Eventhouse, and Power BI Direct Lake.</p>
+        <p>Data engineering, Spark optimization, real-time analytics with Eventhouse, Power BI Direct Lake, and preparing data for AI.</p>
         <span class="page-nav-sections">Build</span>
       </a>
       <a href="operations.html" class="card page-nav-card">
@@ -212,7 +267,7 @@
 
       <!-- Data Engineer -->
       <div class="journey-card" data-role="data-engineer">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">⚙️</span>
           <div>
             <h3>Data Engineer</h3>
@@ -250,7 +305,7 @@
 
       <!-- Data Architect -->
       <div class="journey-card" data-role="data-architect">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">🏗️</span>
           <div>
             <h3>Data Architect</h3>
@@ -281,14 +336,10 @@
             <h4>Recommended Reading</h4>
             <a href="architecture.html" class="journey-link">Core Architecture →</a>
             <a href="data-mesh.html" class="journey-link">Data Mesh →</a>
-            <a href="governance.html" class="journey-link">Governance & Security →</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- BI / Analytics Developer -->
+            <a href="governance.html" class="journey-link">Governance →</a>
+            <a href="security.html" class="journey-link">Security →</a>
       <div class="journey-card" data-role="bi-developer">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">📊</span>
           <div>
             <h3>BI / Analytics Developer</h3>
@@ -318,6 +369,7 @@
           <div class="journey-links">
             <h4>Recommended Reading</h4>
             <a href="best-practices.html" class="journey-link">Power BI & Real-Time Analytics →</a>
+            <a href="best-practices.html#data-for-ai" class="journey-link">Preparing Data for AI & Copilot →</a>
             <a href="operations.html" class="journey-link">Capacity & Cost Management →</a>
             <a href="checklist.html" class="journey-link">Getting Started Checklist →</a>
           </div>
@@ -326,7 +378,7 @@
 
       <!-- Data Scientist / ML Engineer -->
       <div class="journey-card" data-role="data-scientist">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">🧪</span>
           <div>
             <h3>Data Scientist / ML Engineer</h3>
@@ -364,7 +416,7 @@
 
       <!-- IT Admin / Platform Owner -->
       <div class="journey-card" data-role="it-admin">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">🔐</span>
           <div>
             <h3>IT Admin / Platform Owner</h3>
@@ -393,7 +445,8 @@
           </div>
           <div class="journey-links">
             <h4>Recommended Reading</h4>
-            <a href="governance.html" class="journey-link">Governance & Security →</a>
+            <a href="governance.html" class="journey-link">Governance →</a>
+            <a href="security.html" class="journey-link">Security →</a>
             <a href="networking.html" class="journey-link">Networking Security →</a>
             <a href="operations.html" class="journey-link">Capacity, Costs & Migration →</a>
           </div>
@@ -402,7 +455,7 @@
 
       <!-- Business Decision Maker -->
       <div class="journey-card" data-role="business-leader">
-        <div class="journey-card-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="journey-card-header" role="button" tabindex="0" aria-expanded="false" onclick="var e=this.parentElement.classList.toggle('expanded');this.setAttribute('aria-expanded',e)">
           <span class="journey-icon">💼</span>
           <div>
             <h3>Business Decision Maker</h3>

@@ -2,6 +2,7 @@
   "routes": [
     { "route": "/architecture", "rewrite": "/architecture.html" },
     { "route": "/governance", "rewrite": "/governance.html" },
+    { "route": "/security", "rewrite": "/security.html" },
     { "route": "/networking", "rewrite": "/networking.html" },
     { "route": "/best-practices", "rewrite": "/best-practices.html" },
     { "route": "/operations", "rewrite": "/operations.html" },

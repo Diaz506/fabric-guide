@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/security">
+  <title>Security — Microsoft Fabric Guide</title>
+  <meta name="description" content="Comprehensive security guide for Microsoft Fabric: defense-in-depth layers, identity, workspace roles, RLS/CLS, OneLake security, information protection, network security, and monitoring.">
+  <meta property="og:title" content="Security — Microsoft Fabric Guide">
+  <meta property="og:description" content="Comprehensive security guide for Microsoft Fabric: defense-in-depth layers, identity, workspace roles, RLS/CLS, OneLake security, information protection, network security, and monitoring.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fabric.diazlabs.xyz/security">
+  <meta property="og:site_name" content="Microsoft Fabric Guide">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Security — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Comprehensive security guide for Microsoft Fabric: defense-in-depth layers, identity, workspace roles, RLS/CLS, OneLake security, information protection, and monitoring.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
+  <style>
+    /* Defense-in-depth interactive layer diagram */
+    .security-layers { display:flex; flex-direction:column; align-items:center; gap:0; margin:32px auto; max-width:700px; }
+    .security-layer { width:100%; text-align:center; padding:16px 24px; border-radius:12px; cursor:pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration:none; display:block; position:relative; }
+    .security-layer:hover { transform:scale(1.03); box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index:1; }
+    .security-layer .layer-num { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:2px; }
+    .security-layer .layer-title { font-size:16px; font-weight:700; }
+    .security-layer .layer-desc { font-size:12px; opacity:0.8; margin-top:2px; }
+    .security-layer.l-tenant { background: linear-gradient(135deg, #1a1a2e, #16213e); color:#e0e0ff; }
+    .security-layer.l-identity { background: linear-gradient(135deg, #0d47a1, #1565c0); color:#e3f2fd; }
+    .security-layer.l-workspace { background: linear-gradient(135deg, #00695c, #00897b); color:#e0f2f1; }
+    .security-layer.l-item { background: linear-gradient(135deg, #e65100, #ef6c00); color:#fff3e0; }
+    .security-layer.l-data { background: linear-gradient(135deg, #4a148c, #6a1b9a); color:#f3e5f5; }
+    .security-layer.l-onelake { background: linear-gradient(135deg, #1b5e20, #2e7d32); color:#e8f5e9; }
+    .security-layer.l-info { background: linear-gradient(135deg, #b71c1c, #c62828); color:#ffebee; }
+    .security-layer.l-network { background: linear-gradient(135deg, #263238, #37474f); color:#eceff1; }
+    .security-layer.l-monitor { background: linear-gradient(135deg, #4e342e, #5d4037); color:#efebe9; }
+    .layer-connector { width:2px; height:12px; background:var(--border-color); margin:0 auto; }
+    [data-theme="dark"] .security-layer:hover { box-shadow: 0 4px 16px rgba(255,255,255,0.08); }
+
+    /* Security checklist styles */
+    .security-check-group { margin-bottom:24px; }
+    .security-check-group h4 { margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .security-check-item { display:flex; align-items:flex-start; gap:10px; padding:8px 12px; border-radius:8px; margin-bottom:4px; transition: background 0.15s; }
+    .security-check-item:hover { background: var(--bg-secondary); }
+    .security-check-item input[type="checkbox"] { margin-top:3px; accent-color: var(--accent-blue); width:16px; height:16px; cursor:pointer; flex-shrink:0; }
+    .security-check-item label { cursor:pointer; font-size:14px; line-height:1.5; }
+    .check-progress { height:6px; border-radius:3px; background:var(--bg-secondary); overflow:hidden; margin-bottom:24px; }
+    .check-progress-bar { height:100%; border-radius:3px; background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); transition: width 0.4s ease; }
+    .check-progress-text { font-size:13px; color:var(--text-muted); margin-bottom:6px; }
+  </style>
+</head>
+<body>
+<script>if(localStorage.getItem('fabric-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+<main class="main-content">
+
+  <div class="info-box important" style="margin-bottom: 32px;">
+    <div class="info-box-title">👤 Who is this for?</div>
+    <p><span class="tag tag-blue">IT Admin</span> <span class="tag tag-purple">Security Engineer</span> <span class="tag tag-green">Data Architect</span> — This page provides a comprehensive, layered security guide for Microsoft Fabric: from identity and workspace access to data-level controls, OneLake security, information protection, and monitoring.</p>
+  </div>
+
+  <!-- ========================================================
+       SECTION 1: Security Overview & Defense-in-Depth
+       ======================================================== -->
+  <section id="overview" class="section">
+    <div class="section-header">
+      <div class="section-number">Security</div>
+      <h2>Defense-in-Depth Security Model</h2>
+      <p class="section-subtitle">Microsoft Fabric implements a layered security approach — every layer adds protection so that no single breach compromises your entire estate. Click any layer to jump to its section.</p>
+    </div>
+
+    <div class="security-layers">
+      <a href="#identity" class="security-layer l-identity">
+        <div class="layer-num">Layer 1</div>
+        <div class="layer-title">🔐 Identity &amp; Access Management</div>
+        <div class="layer-desc">Entra ID · Conditional Access · MFA · Service Principals · Managed Identities</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#workspace" class="security-layer l-workspace">
+        <div class="layer-num">Layer 2</div>
+        <div class="layer-title">🏢 Workspace Security</div>
+        <div class="layer-desc">Roles · Isolation · Domains · Capacity Boundaries</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#item-security" class="security-layer l-item">
+        <div class="layer-num">Layer 3</div>
+        <div class="layer-title">📦 Item-Level Permissions</div>
+        <div class="layer-desc">Sharing · App Distribution · Endorsement · Per-Item Access</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#data-security" class="security-layer l-data">
+        <div class="layer-num">Layer 4</div>
+        <div class="layer-title">🛡️ Data-Level Security</div>
+        <div class="layer-desc">RLS · CLS · OLS · Dynamic Data Masking</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#onelake-security" class="security-layer l-onelake">
+        <div class="layer-num">Layer 5</div>
+        <div class="layer-title">💾 OneLake Security</div>
+        <div class="layer-desc">Data Access Roles · Folder-Level RBAC · Cross-Engine Enforcement</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#info-protection" class="security-layer l-info">
+        <div class="layer-num">Layer 6</div>
+        <div class="layer-title">🏷️ Information Protection</div>
+        <div class="layer-desc">Sensitivity Labels · DLP Policies · Purview · AI Data Boundaries</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#network-security" class="security-layer l-network">
+        <div class="layer-num">Layer 7</div>
+        <div class="layer-title">🌐 Network Security</div>
+        <div class="layer-desc">Private Link · Managed VNet · Trusted Workspace Access · Zero-Trust</div>
+      </a>
+      <div class="layer-connector"></div>
+      <a href="#monitoring" class="security-layer l-monitor">
+        <div class="layer-num">Layer 8</div>
+        <div class="layer-title">📊 Monitoring &amp; Audit</div>
+        <div class="layer-desc">Audit Logs · Defender for Cloud Apps · Admin Portal · SIEM</div>
+      </a>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Key Principle</div>
+      <p>Defense-in-depth means <strong>no single layer is sufficient on its own</strong>. Even if an attacker bypasses identity controls, workspace isolation, data-level security, and network restrictions each provide additional barriers. Implement all layers for a robust security posture.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Fabric Security Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/white-paper-landing-page" target="_blank">Security Whitepaper ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 2: Identity & Access Management
+       ======================================================== -->
+  <section id="identity" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 1</div>
+      <h2>Identity &amp; Access Management</h2>
+      <p class="section-subtitle">Microsoft Entra ID is the single identity provider for all Fabric access — every request is authenticated before it reaches any resource.</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>🔑 Microsoft Entra ID (Azure AD)</h4>
+        <p>All Fabric authentication goes through Entra ID. Users sign in with organizational accounts, and every API call requires a valid Entra token.</p>
+        <ul>
+          <li><strong>Single Sign-On (SSO)</strong> — seamless access across Fabric, Power BI, and Microsoft 365</li>
+          <li><strong>Multi-Factor Authentication (MFA)</strong> — enforce MFA for all users, especially admins</li>
+          <li><strong>Entra ID Groups</strong> — assign workspace roles and security policies to groups, not individuals</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🚦 Conditional Access</h4>
+        <p>Use Entra ID Conditional Access policies to control <em>how</em> and <em>from where</em> users access Fabric.</p>
+        <ul>
+          <li><strong>Location-based</strong> — restrict to trusted networks or named locations</li>
+          <li><strong>Device compliance</strong> — require Intune-compliant or domain-joined devices</li>
+          <li><strong>Session controls</strong> — enforce sign-in frequency, block persistent sessions</li>
+          <li><strong>Risk-based</strong> — step-up MFA for risky sign-ins detected by Entra ID Protection</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🤖 Service Principals</h4>
+        <p>Use service principals for <strong>automation and CI/CD pipelines</strong> instead of user accounts.</p>
+        <ul>
+          <li>Enable "Service principals can use Fabric APIs" in admin portal</li>
+          <li>Assign to security groups for scoped access</li>
+          <li>Use <strong>certificates over secrets</strong> — shorter rotation, no password leaks</li>
+          <li>Apply Conditional Access policies to restrict where they operate</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔗 Managed Identities</h4>
+        <p>Managed identities enable <strong>credential-free authentication</strong> from Fabric to Azure resources.</p>
+        <ul>
+          <li><strong>System-assigned</strong> — lifecycle tied to the Fabric resource</li>
+          <li><strong>User-assigned</strong> — reusable across multiple resources</li>
+          <li>Use for connecting to ADLS, Key Vault, SQL without storing credentials</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Workspace Identity</h3>
+    <p>Each Fabric workspace can have an automatically managed <strong>workspace identity</strong> — an Entra ID service principal tied to the workspace lifecycle.</p>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>What It Does</h4>
+        <ul>
+          <li>Authenticates the workspace (not a user) when accessing external resources</li>
+          <li>Credentials managed entirely by Fabric — no secrets to rotate</li>
+          <li>Automatically deleted when the workspace is removed</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>How to Use It</h4>
+        <ul>
+          <li>Enable in workspace settings → Identity</li>
+          <li>Assign Azure RBAC roles (e.g., Storage Blob Data Reader) on target resources</li>
+          <li>Required for <strong>Trusted Workspace Access</strong> to firewalled storage</li>
+          <li>Available on <strong>F SKU capacities</strong> only</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Common Mistake</div>
+      <p>Don't use personal user accounts for scheduled refreshes, pipelines, or automated processes. If that user leaves the organization, <strong>all dependent workloads break</strong>. Always use service principals or workspace identities for automation.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/entra/identity/conditional-access/overview" target="_blank">Conditional Access Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/workspace-identity" target="_blank">Workspace Identity ↗</a>
+      <a href="https://learn.microsoft.com/fabric/admin/metadata-scanning-enable-read-apis" target="_blank">Service Principals in Fabric ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 3: Workspace Security
+       ======================================================== -->
+  <section id="workspace" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 2</div>
+      <h2>Workspace Security</h2>
+      <p class="section-subtitle">Workspaces are the primary security boundary in Fabric — they determine who can access, create, and manage artifacts.</p>
+    </div>
+
+    <h3>Built-in Workspace Roles</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Role</th><th>Permissions</th><th>Typical Assignment</th><th>OneLake Access</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Admin</strong></td><td>Full control: manage access, delete workspace, configure settings</td><td>Workspace owners, IT admins</td><td>Full</td></tr>
+          <tr><td><strong>Member</strong></td><td>Create, edit, delete artifacts; publish reports; share items</td><td>Data engineers, developers</td><td>Full</td></tr>
+          <tr><td><strong>Contributor</strong></td><td>Create and edit artifacts, but cannot share or manage access</td><td>Analysts, junior developers</td><td>Full</td></tr>
+          <tr><td><strong>Viewer</strong></td><td>View and interact with artifacts (read-only)</td><td>Business users, stakeholders</td><td><strong>Restricted by data access roles</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">🔑 Critical Distinction</div>
+      <p>Admin, Member, and Contributor roles have <strong>full read/write access to all OneLake data</strong> in the workspace. Only the <strong>Viewer role</strong> is restricted by OneLake data access roles. Design your workspace access carefully — don't give Member/Contributor access to users who should only see a subset of data.</p>
+    </div>
+
+    <h3>Workspace Isolation Patterns</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div class="card">
+        <h4>🏗️ Environment Separation</h4>
+        <p>Separate workspaces for <strong>Dev → Test → Prod</strong>. Each environment has its own access list, ensuring developers can't accidentally modify production data.</p>
+      </div>
+      <div class="card">
+        <h4>🏢 Domain Boundaries</h4>
+        <p>Organize workspaces into <strong>Fabric Domains</strong> (Finance, Marketing, HR). Domain owners control governance policies for all workspaces in their domain.</p>
+      </div>
+      <div class="card">
+        <h4>🔒 Sensitivity Tiers</h4>
+        <p>Create separate workspaces for <strong>sensitive vs. non-sensitive data</strong>. Apply stricter Conditional Access and audit policies to high-sensitivity workspaces.</p>
+      </div>
+      <div class="card">
+        <h4>⚡ Capacity Isolation</h4>
+        <p>Assign critical workspaces to <strong>dedicated capacities</strong>. This provides resource isolation and ensures one team's heavy workloads don't impact another's.</p>
+      </div>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Use <strong>Entra ID security groups</strong> for role assignments instead of individual users. This makes access auditable, scalable, and easy to update when team members change.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/fundamentals/roles-workspaces" target="_blank">Workspace Roles ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/domains" target="_blank">Fabric Domains ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 4: Item-Level Permissions
+       ======================================================== -->
+  <section id="item-security" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 3</div>
+      <h2>Item-Level Permissions</h2>
+      <p class="section-subtitle">Beyond workspace roles, you can grant granular permissions on individual items — reports, semantic models, warehouses, and more.</p>
+    </div>
+
+    <h3>Permission Types</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Permission</th><th>What It Allows</th><th>How It's Granted</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Read</strong></td><td>View and interact with the item</td><td>Sharing dialog, app audience, direct link</td></tr>
+          <tr><td><strong>ReadAll</strong></td><td>Access the underlying data in OneLake (files and folders)</td><td>Item permissions panel</td></tr>
+          <tr><td><strong>ReadData</strong></td><td>Query data via SQL analytics endpoint</td><td>Item permissions panel</td></tr>
+          <tr><td><strong>Write</strong></td><td>Edit the item (notebooks, reports, pipelines)</td><td>Workspace role (Contributor+) or item-level grant</td></tr>
+          <tr><td><strong>Reshare</strong></td><td>Share the item with other users</td><td>Sharing dialog option "Allow recipients to share"</td></tr>
+          <tr><td><strong>Execute</strong></td><td>Run pipelines or notebooks</td><td>Item permissions panel</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sharing &amp; Distribution</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>📤 Direct Sharing</h4>
+        <p>Share individual items with specific users or groups. Choose whether recipients can reshare or build on the data. <strong>Use sparingly</strong> — it creates hard-to-audit one-off permissions.</p>
+      </div>
+      <div class="card">
+        <h4>📱 Fabric Apps</h4>
+        <p>Package reports and dashboards into an <strong>app</strong> with defined audiences. Apps provide a curated, read-only experience — the <strong>recommended</strong> way to distribute content to business users.</p>
+      </div>
+      <div class="card">
+        <h4>🏷️ Endorsement Signals</h4>
+        <ul>
+          <li><span class="tag tag-blue">Promoted</span> — workspace members mark items as reliable and ready for use</li>
+          <li><span class="tag tag-green">Certified</span> — designated reviewers certify items meet governance standards</li>
+        </ul>
+        <p>Endorsed items appear with badges in search, making trusted data easy to find.</p>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <div class="info-box-title">⚠️ Avoid Permission Sprawl</div>
+      <p>If you find yourself sharing dozens of items individually, you probably need to redesign your workspace structure. Prefer <strong>workspace roles + apps</strong> over per-item sharing. Run the <strong>access review</strong> in Admin Portal quarterly to clean up stale permissions.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/fundamentals/share-items" target="_blank">Sharing Items ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/endorsement-overview" target="_blank">Endorsement ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 5: Data-Level Security
+       ======================================================== -->
+  <section id="data-security" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 4</div>
+      <h2>Data-Level Security</h2>
+      <p class="section-subtitle">Control exactly which rows, columns, and objects each user can see — even when they have access to the item itself.</p>
+    </div>
+
+    <h3>Row-Level Security (RLS)</h3>
+    <p>RLS filters data at query time so users only see rows they're authorized to access. Available in <strong>Power BI semantic models</strong> and <strong>Fabric Warehouse</strong>.</p>
+    <div class="code-block">
+      <div class="code-header"><span>T-SQL — Row-Level Security in Warehouse</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>-- Create a security predicate function
+CREATE FUNCTION dbo.fn_security_predicate(@Region AS nvarchar(50))
+RETURNS TABLE
+WITH SCHEMABINDING
+AS
+RETURN SELECT 1 AS result
+WHERE @Region = USER_NAME()
+   OR USER_NAME() = 'admin@contoso.com';
+
+-- Apply security policy to a table
+CREATE SECURITY POLICY RegionFilter
+ADD FILTER PREDICATE dbo.fn_security_predicate(Region)
+ON dbo.SalesData
+WITH (STATE = ON);</pre>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 RLS in Power BI</div>
+      <p>Define roles and DAX filter expressions in Power BI Desktop. Test with "View as role" before publishing. RLS is enforced in the Power BI service, apps, and embedded scenarios — but <strong>not</strong> when querying the underlying lakehouse directly.</p>
+    </div>
+
+    <h3>Column-Level Security (CLS)</h3>
+    <p>CLS restricts access to specific columns using standard SQL <code>GRANT</code> and <code>DENY</code> statements in Fabric Warehouse.</p>
+    <div class="code-block">
+      <div class="code-header"><span>T-SQL — Column-Level Security</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>-- Deny access to salary column for a specific role
+DENY SELECT ON dbo.Employees(Salary, SSN) TO [LimitedAccess];
+
+-- Grant access to only specific columns
+GRANT SELECT ON dbo.Employees(EmployeeId, Name, Department) TO [LimitedAccess];</pre>
+    </div>
+
+    <h3>Object-Level Security (OLS)</h3>
+    <p>OLS hides entire tables or columns from specific users in <strong>Power BI semantic models</strong>. Unlike CLS which returns an error, OLS makes the object <strong>completely invisible</strong> — users don't even see it in field lists.</p>
+    <ul>
+      <li>Configure OLS in Tabular Editor or XMLA endpoint</li>
+      <li>Define roles with <code>None</code> permission on specific tables or columns</li>
+      <li>Users in that role won't see the objects in reports, DAX queries, or metadata</li>
+    </ul>
+
+    <h3>Dynamic Data Masking (DDM)</h3>
+    <p>DDM masks sensitive data in query results <strong>without changing the stored data</strong>. Non-privileged users see masked values; privileged users see the original.</p>
+    <div class="code-block">
+      <div class="code-header"><span>T-SQL — Dynamic Data Masking in Warehouse</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
+      <pre>-- Mask email column with partial masking
+ALTER TABLE dbo.Customers
+ALTER COLUMN Email ADD MASKED WITH (FUNCTION = 'email()');
+
+-- Mask phone with custom partial mask (show last 4 digits)
+ALTER TABLE dbo.Customers
+ALTER COLUMN Phone ADD MASKED WITH (FUNCTION = 'partial(0,"XXX-XXX-",4)');
+
+-- Full mask on SSN (returns "xxxx")
+ALTER TABLE dbo.Customers
+ALTER COLUMN SSN ADD MASKED WITH (FUNCTION = 'default()');
+
+-- Grant UNMASK to privileged roles
+GRANT UNMASK ON dbo.Customers TO [PrivilegedAnalysts];</pre>
+    </div>
+
+    <div class="info-box important">
+      <div class="info-box-title">🔒 Layer Your Data Controls</div>
+      <p>DDM, RLS, CLS, and OLS are <strong>complementary, not alternatives</strong>. A robust setup uses RLS to filter rows, CLS to restrict columns, DDM to mask remaining sensitive values, and OLS to hide objects from Power BI users who shouldn't see them at all.</p>
+    </div>
+
+    <h3>Data Security Decision Matrix</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Requirement</th><th>Mechanism</th><th>Where</th><th>Hides Metadata?</th></tr></thead>
+        <tbody>
+          <tr><td>Users see only their own rows</td><td><strong>RLS</strong></td><td>Warehouse, Semantic Model</td><td>No</td></tr>
+          <tr><td>Hide specific columns from a role</td><td><strong>CLS</strong></td><td>Warehouse</td><td>No (error on access)</td></tr>
+          <tr><td>Hide tables/columns from field lists</td><td><strong>OLS</strong></td><td>Semantic Model (Tabular Editor)</td><td>Yes</td></tr>
+          <tr><td>Show masked values (e.g., XXX-XX-1234)</td><td><strong>DDM</strong></td><td>Warehouse</td><td>No (shows masked)</td></tr>
+          <tr><td>Restrict access to lakehouse folders</td><td><strong>OneLake RBAC</strong></td><td>OneLake</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/data-warehouse/row-level-security" target="_blank">Row-Level Security ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-warehouse/column-level-security" target="_blank">Column-Level Security ↗</a>
+      <a href="https://learn.microsoft.com/fabric/data-warehouse/dynamic-data-masking" target="_blank">Dynamic Data Masking ↗</a>
+      <a href="https://learn.microsoft.com/power-bi/enterprise/service-admin-ols" target="_blank">Object-Level Security ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 6: OneLake Security
+       ======================================================== -->
+  <section id="onelake-security" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 5</div>
+      <h2>OneLake Security</h2>
+      <p class="section-subtitle">Fine-grained access control at the storage layer — restrict users to specific folders and tables within a lakehouse.</p>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">🆕 What's New</div>
+      <p>OneLake data access roles provide <strong>folder-level and table-level RBAC</strong> directly in OneLake. Security is enforced at the storage layer across <strong>all supported compute engines</strong> — including Spark, SQL endpoint, and Power BI Direct Lake. <strong>Note:</strong> This feature is in <strong>public preview</strong> — supported items and engine coverage are expanding. Check the latest docs for current availability.</p>
+    </div>
+
+    <h3>How OneLake Data Access Roles Work</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>📂 Define Roles</h4>
+        <p>Create custom security roles in the lakehouse security panel. Each role specifies which <strong>folders and tables</strong> it grants access to.</p>
+        <ul>
+          <li>Navigate to Lakehouse → <strong>Manage OneLake security</strong></li>
+          <li>Create a new role (e.g., "Sales Analysts")</li>
+          <li>Browse and select specific folders or tables to include</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>👥 Assign Users</h4>
+        <p>Add Entra ID users or security groups to each role. Users can belong to multiple roles — access is <strong>additive</strong> (union of all role permissions).</p>
+        <ul>
+          <li>Assign via the security panel UI or REST APIs</li>
+          <li>Use <strong>Entra ID groups</strong> for scalable management</li>
+          <li>Changes take effect within minutes</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔒 Enforcement</h4>
+        <p>Access is enforced at the <strong>OneLake storage plane</strong> for supported items and engines.</p>
+        <ul>
+          <li>Spark notebooks respect folder restrictions</li>
+          <li>SQL analytics endpoint respects table restrictions</li>
+          <li>Power BI Direct Lake respects the same boundaries</li>
+          <li>OneLake file explorer and APIs also enforce roles</li>
+          <li><strong>Preview:</strong> Coverage is expanding — verify support for your specific item types</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>OneLake RBAC Architecture</h3>
+    <svg viewBox="0 0 700 260" style="width:100%;max-width:700px;display:block;margin:24px auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Lakehouse container -->
+      <rect x="10" y="10" width="680" height="240" rx="12" fill="var(--bg-secondary)" stroke="var(--border-color)" stroke-width="1.5"/>
+      <text x="350" y="36" text-anchor="middle" fill="var(--text-muted)" font-size="12" font-weight="600" font-family="var(--font-sans)">LAKEHOUSE — OneLake Data Access Roles</text>
+
+      <!-- Folders -->
+      <rect x="30" y="55" width="140" height="80" rx="8" fill="var(--bg-card)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="100" y="78" text-anchor="middle" fill="var(--accent-blue)" font-size="12" font-weight="600" font-family="var(--font-sans)">📁 Tables/</text>
+      <text x="100" y="95" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">sales, customers,</text>
+      <text x="100" y="110" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">products, orders</text>
+      <text x="100" y="128" text-anchor="middle" fill="var(--accent-blue)" font-size="9" font-weight="600" font-family="var(--font-sans)">🔓 Role: Sales Team</text>
+
+      <rect x="190" y="55" width="140" height="80" rx="8" fill="var(--bg-card)" stroke="#e65100" stroke-width="1.5"/>
+      <text x="260" y="78" text-anchor="middle" fill="#e65100" font-size="12" font-weight="600" font-family="var(--font-sans)">📁 Finance/</text>
+      <text x="260" y="95" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">payroll, budgets,</text>
+      <text x="260" y="110" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">forecasts</text>
+      <text x="260" y="128" text-anchor="middle" fill="#e65100" font-size="9" font-weight="600" font-family="var(--font-sans)">🔒 Role: Finance Only</text>
+
+      <rect x="350" y="55" width="140" height="80" rx="8" fill="var(--bg-card)" stroke="var(--accent-green)" stroke-width="1.5"/>
+      <text x="420" y="78" text-anchor="middle" fill="var(--accent-green)" font-size="12" font-weight="600" font-family="var(--font-sans)">📁 Gold/</text>
+      <text x="420" y="95" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">curated datasets,</text>
+      <text x="420" y="110" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">aggregated metrics</text>
+      <text x="420" y="128" text-anchor="middle" fill="var(--accent-green)" font-size="9" font-weight="600" font-family="var(--font-sans)">🔓 Role: All Analysts</text>
+
+      <rect x="510" y="55" width="160" height="80" rx="8" fill="var(--bg-card)" stroke="#b71c1c" stroke-width="1.5"/>
+      <text x="590" y="78" text-anchor="middle" fill="#b71c1c" font-size="12" font-weight="600" font-family="var(--font-sans)">📁 Raw / Landing/</text>
+      <text x="590" y="95" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">unprocessed, PII,</text>
+      <text x="590" y="110" text-anchor="middle" fill="var(--text-muted)" font-size="10" font-family="var(--font-sans)">sensitive ingestion</text>
+      <text x="590" y="128" text-anchor="middle" fill="#b71c1c" font-size="9" font-weight="600" font-family="var(--font-sans)">🔒 Role: Engineers Only</text>
+
+      <!-- Compute engines accessing -->
+      <rect x="80" y="170" width="110" height="35" rx="6" fill="var(--bg-card)" stroke="var(--border-color)"/>
+      <text x="135" y="192" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="600" font-family="var(--font-sans)">⚡ Spark</text>
+
+      <rect x="220" y="170" width="110" height="35" rx="6" fill="var(--bg-card)" stroke="var(--border-color)"/>
+      <text x="275" y="192" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="600" font-family="var(--font-sans)">🔍 SQL Endpoint</text>
+
+      <rect x="360" y="170" width="110" height="35" rx="6" fill="var(--bg-card)" stroke="var(--border-color)"/>
+      <text x="415" y="192" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="600" font-family="var(--font-sans)">📊 Power BI</text>
+
+      <rect x="500" y="170" width="110" height="35" rx="6" fill="var(--bg-card)" stroke="var(--border-color)"/>
+      <text x="555" y="192" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="600" font-family="var(--font-sans)">📡 OneLake API</text>
+
+      <!-- Enforcement label -->
+      <rect x="180" y="220" width="340" height="24" rx="6" fill="var(--accent-blue)" opacity="0.15"/>
+      <text x="350" y="237" text-anchor="middle" fill="var(--accent-blue)" font-size="11" font-weight="700" font-family="var(--font-sans)">🛡️ Security enforced at storage layer for supported items (preview)</text>
+    </svg>
+
+    <h3>Key Limitations &amp; Considerations</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Consideration</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Applies to Viewer role only</strong></td><td>Workspace Admin, Member, and Contributor roles bypass OneLake RBAC — they always have full data access</td></tr>
+          <tr><td><strong>F SKU required</strong></td><td>OneLake data access roles require Fabric capacity (F SKU), not trial or P SKU</td></tr>
+          <tr><td><strong>Additive permissions</strong></td><td>If a user belongs to multiple roles, they get the <strong>union</strong> of all permissions (most permissive wins)</td></tr>
+          <tr><td><strong>No deny rules</strong></td><td>You can't explicitly deny access — only grant. Structure roles carefully to avoid over-permissioning</td></tr>
+          <tr><td><strong>Preview status</strong></td><td>OneLake security is in <strong>public preview</strong> — supported item types (lakehouse, mirrored items) and engine coverage are expanding</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Best Practice</div>
+      <p>Combine OneLake RBAC with <strong>medallion architecture</strong>: restrict the Raw/Bronze layer to data engineers, Silver to analysts with domain-specific roles, and Gold to all business users. This aligns data maturity with access control naturally.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/onelake/security/table-folder-security" target="_blank">Table &amp; Folder Security in OneLake ↗</a>
+      <a href="https://learn.microsoft.com/fabric/onelake/security/get-started-data-access-roles" target="_blank">Get Started with Data Access Roles ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 7: Information Protection
+       ======================================================== -->
+  <section id="info-protection" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 6</div>
+      <h2>Information Protection</h2>
+      <p class="section-subtitle">Classify, label, and protect data throughout its lifecycle with Microsoft Purview and Data Loss Prevention policies.</p>
+    </div>
+
+    <h3>Sensitivity Labels</h3>
+    <p>Microsoft Purview sensitivity labels (e.g., "Public," "Internal," "Confidential," "Highly Confidential") can be applied to Fabric artifacts to classify and protect data.</p>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>🏷️ How Labels Work</h4>
+        <ul>
+          <li>Applied to lakehouses, warehouses, semantic models, reports, and more</li>
+          <li>Labels <strong>flow downstream automatically</strong> — a labeled lakehouse passes its label to reports built on it</li>
+          <li>Labels can enforce <strong>encryption</strong> on exported files (Excel, PDF, PowerPoint)</li>
+          <li>Labels are visible in workspace lists, search results, and lineage views</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>⚙️ Configuration</h4>
+        <ul>
+          <li>Define labels in the <strong>Microsoft Purview compliance portal</strong></li>
+          <li>Set <strong>auto-labeling policies</strong> to automatically apply labels based on content patterns (e.g., credit card numbers, SSNs)</li>
+          <li>Enable <strong>mandatory labeling</strong> in Fabric admin portal — fully enforced for Power BI items, with expanding support for other Fabric items</li>
+          <li>Control who can apply or change specific labels with <strong>label scoping</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Data Loss Prevention (DLP)</h3>
+    <p>DLP policies detect and protect sensitive data in Fabric, preventing accidental exposure or exfiltration.</p>
+    <ul>
+      <li><strong>Policy tips</strong> — show inline warnings when users interact with sensitive data</li>
+      <li><strong>Block actions</strong> — prevent sharing, export, or download of highly sensitive items</li>
+      <li><strong>Alert admins</strong> — send notifications when DLP rules are triggered</li>
+      <li>DLP is <strong>AI-aware</strong> — policies apply to Copilot interactions and AI-generated content</li>
+    </ul>
+
+    <h3>Encryption &amp; Key Management</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>🔐 Encryption at Rest</h4>
+        <p>All data stored in OneLake is <strong>encrypted at rest</strong> using Microsoft-managed keys by default. For regulated workloads, enable <strong>customer-managed keys (CMK)</strong> to retain control of your encryption keys via Azure Key Vault.</p>
+      </div>
+      <div class="card">
+        <h4>🔒 Encryption in Transit</h4>
+        <p>All communications use <strong>TLS 1.2+</strong> encryption. This applies to user-to-Fabric, Fabric-to-data-source, and inter-service traffic within the platform.</p>
+      </div>
+    </div>
+
+    <h3>Copilot &amp; AI Data Boundaries</h3>
+    <div class="info-box important">
+      <div class="info-box-title">🤖 AI Security Controls</div>
+      <p>Fabric Copilot <strong>respects all existing security controls</strong>: sensitivity labels, RLS, CLS, workspace roles, and DLP policies. Copilot only surfaces data the current user is authorized to see. Additionally:</p>
+      <ul style="margin-top: 8px;">
+        <li><strong>Tenant isolation</strong> — Copilot never accesses data from other tenants</li>
+        <li><strong>Data boundaries</strong> — data stays within your geographic region for AI processing</li>
+        <li><strong>Purview DSPM for AI</strong> — monitor AI prompts, responses, and flag risky behavior</li>
+        <li><strong>Labeled data protection</strong> — Copilot won't surface content from "Highly Confidential" items to unauthorized users</li>
+      </ul>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Before Enabling Copilot</div>
+      <p>Audit your permissions and labeling strategy <strong>before</strong> rolling out Copilot. Over-permissioned content is the #1 source of AI data security incidents. Ensure sensitivity labels are applied, DLP policies are active, and workspace access is properly scoped.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/governance/information-protection" target="_blank">Information Protection in Fabric ↗</a>
+      <a href="https://learn.microsoft.com/purview/dlp-learn-about-dlp" target="_blank">Data Loss Prevention ↗</a>
+      <a href="https://learn.microsoft.com/purview/ai-microsoft-purview" target="_blank">Purview DSPM for AI ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 8: Network Security (Summary + Cross-Link)
+       ======================================================== -->
+  <section id="network-security" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 7</div>
+      <h2>Network Security</h2>
+      <p class="section-subtitle">Control network traffic to, from, and within Fabric using private connectivity, managed networks, and zero-trust architecture.</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>🔒 Inbound — Users to Fabric</h4>
+        <ul>
+          <li><strong>Azure Private Link</strong> — route all traffic through private endpoints in your VNet</li>
+          <li><strong>Conditional Access</strong> — enforce device compliance, location, MFA</li>
+          <li><strong>Tenant restrictions</strong> — prevent data exfiltration to unauthorized tenants</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔗 Outbound — Fabric to Data</h4>
+        <ul>
+          <li><strong>Managed Private Endpoints (MPE)</strong> — Fabric connects to resources through Azure backbone</li>
+          <li><strong>VNet Data Gateways</strong> — bridge to on-premises or VNet-isolated resources</li>
+          <li><strong>Trusted Workspace Access</strong> — firewalled storage trusts specific Fabric workspaces</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🛡️ Internal — Between Services</h4>
+        <ul>
+          <li><strong>Managed VNets</strong> — Spark runs in Fabric-managed VNets with controlled egress</li>
+          <li><strong>Service tags</strong> — NSG rules using <code>DataFactory</code> and <code>PowerBI</code> tags</li>
+          <li><strong>Encryption in transit</strong> — TLS 1.2+ for all communications</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Network Decision Quick Reference</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Scenario</th><th>Approach</th><th>SKU Min</th></tr></thead>
+        <tbody>
+          <tr><td>Corporate-only access to Fabric</td><td><strong>Private Link</strong> + block public</td><td>F64</td></tr>
+          <tr><td>Spark reads from firewalled ADLS</td><td><strong>Managed Private Endpoints</strong></td><td>F64</td></tr>
+          <tr><td>OneLake shortcuts to firewalled storage</td><td><strong>Trusted Workspace Access</strong></td><td>F2</td></tr>
+          <tr><td>On-premises SQL connectivity</td><td><strong>VNet Data Gateway</strong></td><td>F2</td></tr>
+          <tr><td>Full zero-trust posture</td><td><strong>Private Link + MPE + Managed VNet + CA</strong></td><td>F64</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box" style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card)); border-left: 4px solid var(--accent-blue);">
+      <div class="info-box-title">🌐 Deep Dive: Networking Security</div>
+      <p>For detailed architecture diagrams, step-by-step Private Link setup, DNS configuration, managed VNet guidance, and a full networking decision matrix, see the dedicated <strong><a href="networking.html" style="color:var(--accent-blue);font-weight:600;">Networking Security →</a></strong> page.</p>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Fabric Security Overview ↗</a>
+      <a href="https://learn.microsoft.com/fabric/security/security-private-links-overview" target="_blank">Private Links ↗</a>
+      <h4>📎 See Also</h4>
+      <a href="networking.html">Networking Security (Full Guide) →</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 9: Monitoring & Audit
+       ======================================================== -->
+  <section id="monitoring" class="section">
+    <div class="section-header">
+      <div class="section-number">Layer 8</div>
+      <h2>Monitoring &amp; Audit</h2>
+      <p class="section-subtitle">Continuous monitoring, audit trails, and threat detection to ensure your security controls are working and to investigate incidents.</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="card">
+        <h4>📋 Unified Audit Logs</h4>
+        <p>Fabric logs all user and admin activities to the <strong>Microsoft 365 Unified Audit Log</strong>.</p>
+        <ul>
+          <li>Track who accessed, modified, shared, or deleted artifacts</li>
+          <li>Export data, report views, refresh operations, and admin settings changes</li>
+          <li>Query logs via the Purview compliance portal or PowerShell</li>
+          <li>Retain logs per your Microsoft 365 retention policies</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🛡️ Microsoft Defender for Cloud Apps</h4>
+        <p>MDCA provides real-time threat detection and policy enforcement for Fabric.</p>
+        <ul>
+          <li><strong>Anomaly detection</strong> — flag unusual download patterns, mass data exports, or suspicious sign-ins</li>
+          <li><strong>Session controls</strong> — proxy user sessions to enforce real-time DLP during access</li>
+          <li><strong>Activity policies</strong> — alert on specific high-risk actions (e.g., sharing to external users)</li>
+          <li>Integrates with Microsoft Sentinel for SIEM correlation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>📊 Admin Portal Monitoring</h4>
+        <p>The Fabric Admin Portal provides built-in monitoring dashboards.</p>
+        <ul>
+          <li><strong>Usage metrics</strong> — who's accessing what, how often</li>
+          <li><strong>Capacity metrics</strong> — monitor throttling, CU consumption, and performance</li>
+          <li><strong>Audit settings</strong> — manage what gets logged and who receives alerts</li>
+          <li><strong>Tenant settings</strong> — review and restrict feature toggles across the organization</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔍 Fabric Monitoring Workspace</h4>
+        <p>Fabric's built-in monitoring workspace collects operational metrics into an <strong>Eventhouse</strong>.</p>
+        <ul>
+          <li>Query logs with <strong>KQL</strong> for deep analysis</li>
+          <li>Build custom dashboards for pipeline runs, Spark jobs, refresh status</li>
+          <li>Set up <strong>Data Activator alerts</strong> for real-time notifications on anomalies</li>
+          <li>Correlate operational data with security events</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Monitoring Best Practices</div>
+      <ul style="margin-top: 8px;">
+        <li><strong>Forward Fabric audit logs to Microsoft Sentinel</strong> for centralized security monitoring and automated incident response</li>
+        <li><strong>Enable MDCA policies</strong> — at minimum: unusual data download, risky sign-in, mass sharing detection</li>
+        <li><strong>Review admin portal weekly</strong> — check tenant settings, new workspace creation, and external sharing activity</li>
+        <li><strong>Automate alerts</strong> — use Data Activator or Logic Apps to notify security teams of critical events</li>
+      </ul>
+    </div>
+
+    <div class="section-links">
+      <h4>📚 Learn More</h4>
+      <a href="https://learn.microsoft.com/fabric/admin/operation-list" target="_blank">Audit Log Operations ↗</a>
+      <a href="https://learn.microsoft.com/fabric/governance/service-security-using-defender-for-cloud-apps-controls" target="_blank">Defender for Cloud Apps in Fabric ↗</a>
+      <a href="https://learn.microsoft.com/fabric/admin/monitoring-workspace" target="_blank">Fabric Monitoring Workspace ↗</a>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SECTION 10: Security Checklist
+       ======================================================== -->
+  <section id="checklist" class="section">
+    <div class="section-header">
+      <div class="section-number">Checklist</div>
+      <h2>Security Hardening Checklist</h2>
+      <p class="section-subtitle">Track your Fabric security posture across all layers. Progress is saved in your browser.</p>
+    </div>
+
+    <div class="check-progress-text">Completed: <strong><span id="sec-check-count">0</span> / <span id="sec-check-total">0</span></strong></div>
+    <div class="check-progress"><div class="check-progress-bar" id="sec-check-bar" style="width:0%"></div></div>
+
+    <div class="security-check-group">
+      <h4>🔐 Identity &amp; Access</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-mfa" data-group="security-checklist"><label for="sc-mfa">Enforce MFA for all users via Conditional Access</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-ca" data-group="security-checklist"><label for="sc-ca">Configure Conditional Access policies (location, device, risk)</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-sp" data-group="security-checklist"><label for="sc-sp">Use service principals (not user accounts) for all automation</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-wsi" data-group="security-checklist"><label for="sc-wsi">Enable workspace identity for accessing firewalled resources</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-groups" data-group="security-checklist"><label for="sc-groups">Use Entra ID security groups (not individuals) for role assignments</label></div>
+    </div>
+
+    <div class="security-check-group">
+      <h4>🏢 Workspace &amp; Item Security</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-ws-sep" data-group="security-checklist"><label for="sc-ws-sep">Separate Dev / Test / Prod workspaces with distinct access</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-ws-viewer" data-group="security-checklist"><label for="sc-ws-viewer">Limit Contributor/Member roles — use Viewer + OneLake RBAC for most users</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-apps" data-group="security-checklist"><label for="sc-apps">Distribute content via Fabric Apps rather than direct sharing</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-endorse" data-group="security-checklist"><label for="sc-endorse">Establish a certification process for production artifacts</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-review" data-group="security-checklist"><label for="sc-review">Review workspace access quarterly and remove stale permissions</label></div>
+    </div>
+
+    <div class="security-check-group">
+      <h4>🛡️ Data-Level Controls</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-rls" data-group="security-checklist"><label for="sc-rls">Implement RLS on all customer-facing reports and shared datasets</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-cls" data-group="security-checklist"><label for="sc-cls">Apply CLS to restrict PII columns (Salary, SSN, etc.) in warehouse</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-ddm" data-group="security-checklist"><label for="sc-ddm">Enable Dynamic Data Masking on sensitive fields</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-onelake" data-group="security-checklist"><label for="sc-onelake">Configure OneLake data access roles for folder-level restrictions</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-ols" data-group="security-checklist"><label for="sc-ols">Apply OLS in semantic models to hide sensitive tables/columns</label></div>
+    </div>
+
+    <div class="security-check-group">
+      <h4>🏷️ Information Protection</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-labels" data-group="security-checklist"><label for="sc-labels">Apply sensitivity labels to all artifacts</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-mandatory" data-group="security-checklist"><label for="sc-mandatory">Enable mandatory labeling (fully enforced for Power BI; expanding for other items)</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-dlp" data-group="security-checklist"><label for="sc-dlp">Configure DLP policies for sensitive data patterns</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-copilot" data-group="security-checklist"><label for="sc-copilot">Audit permissions and labels before enabling Copilot</label></div>
+    </div>
+
+    <div class="security-check-group">
+      <h4>🌐 Network Security</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-pl" data-group="security-checklist"><label for="sc-pl">Enable Private Link for inbound access (if required)</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-mpe" data-group="security-checklist"><label for="sc-mpe">Configure Managed Private Endpoints for firewalled data sources</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-twa" data-group="security-checklist"><label for="sc-twa">Set up Trusted Workspace Access for firewalled storage accounts</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-mvnet" data-group="security-checklist"><label for="sc-mvnet">Enable Managed VNets for Spark workloads if outbound control is needed</label></div>
+    </div>
+
+    <div class="security-check-group">
+      <h4>📊 Monitoring &amp; Audit</h4>
+      <div class="security-check-item"><input type="checkbox" id="sc-audit" data-group="security-checklist"><label for="sc-audit">Enable and verify audit logging is active</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-mdca" data-group="security-checklist"><label for="sc-mdca">Configure Defender for Cloud Apps with anomaly detection policies</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-siem" data-group="security-checklist"><label for="sc-siem">Forward audit logs to Microsoft Sentinel or your SIEM</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-alerts" data-group="security-checklist"><label for="sc-alerts">Set up automated alerts for critical security events</label></div>
+      <div class="security-check-item"><input type="checkbox" id="sc-tenant" data-group="security-checklist"><label for="sc-tenant">Review tenant settings in admin portal weekly</label></div>
+    </div>
+  </section>
+
+</main>
+<script src="js/nav.js"></script>
+<script>injectNav('security');</script>
+<script src="js/main.js"></script>
+<script src="js/features.js"></script>
+<script>
+// Security checklist persistence
+(function() {
+  const STORAGE_KEY = 'fabric-security-checklist';
+  const boxes = document.querySelectorAll('[data-group="security-checklist"]');
+  const countEl = document.getElementById('sec-check-count');
+  const totalEl = document.getElementById('sec-check-total');
+  const barEl = document.getElementById('sec-check-bar');
+  if (!boxes.length || !countEl) return;
+
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  totalEl.textContent = boxes.length;
+
+  function updateProgress() {
+    const checked = document.querySelectorAll('[data-group="security-checklist"]:checked').length;
+    countEl.textContent = checked;
+    barEl.style.width = Math.round((checked / boxes.length) * 100) + '%';
+  }
+
+  boxes.forEach(cb => {
+    if (saved[cb.id]) cb.checked = true;
+    cb.addEventListener('change', function() {
+      const state = {};
+      boxes.forEach(b => { if (b.checked) state[b.id] = true; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateProgress();
+    });
+  });
+  updateProgress();
+})();
+</script>
+</body>
+</html>

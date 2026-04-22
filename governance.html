@@ -3,16 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Governance &amp; Security — Microsoft Fabric Guide</title>
-  <meta name="description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
-  <meta property="og:title" content="Governance &amp; Security — Microsoft Fabric Guide">
-  <meta property="og:description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/governance">
+  <title>Governance — Microsoft Fabric Guide</title>
+  <meta name="description" content="Data governance, cataloging, Purview integration, endorsement, domains, and data quality best practices for Microsoft Fabric.">
+  <meta property="og:title" content="Governance — Microsoft Fabric Guide">
+  <meta property="og:description" content="Data governance, cataloging, Purview integration, endorsement, domains, and data quality best practices for Microsoft Fabric.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/governance">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Governance &amp; Security — Microsoft Fabric Guide">
-  <meta name="twitter:description" content="Data governance, security, access control, and compliance best practices for Microsoft Fabric.">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Governance — Microsoft Fabric Guide">
+  <meta name="twitter:description" content="Data governance, cataloging, Purview integration, endorsement, domains, and data quality best practices for Microsoft Fabric.">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230078D4'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-weight='bold' font-family='Segoe UI'>F</text></svg>">
 </head>
@@ -105,81 +109,39 @@
     <div class="section-header">
       <div class="section-number">Security</div>
       <h2>Security</h2>
-      <p class="section-subtitle">Securing your data at every layer — from workspace access to row-level permissions.</p>
+      <p class="section-subtitle">Securing your data at every layer — from identity and workspace access to row-level permissions and network controls.</p>
     </div>
 
-    <h3>Security Model Overview</h3>
-    <p>Fabric implements a <strong>defense-in-depth</strong> approach with multiple security layers: identity, workspace, item, data, and network.</p>
+    <p>Fabric implements a <strong>defense-in-depth</strong> approach with multiple security layers. For a comprehensive walkthrough of every layer, see the dedicated Security page.</p>
 
-    <h3>Workspace Roles</h3>
-    <p>Every workspace has four built-in roles that control what users can do:</p>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>Role</th><th>Permissions</th><th>Typical Assignment</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Admin</strong></td><td>Full control: manage access, delete workspace, configure settings</td><td>Workspace owners, IT admins</td></tr>
-          <tr><td><strong>Member</strong></td><td>Create, edit, delete artifacts; publish reports; share items</td><td>Data engineers, developers</td></tr>
-          <tr><td><strong>Contributor</strong></td><td>Create and edit artifacts, but cannot share or manage access</td><td>Analysts, junior developers</td></tr>
-          <tr><td><strong>Viewer</strong></td><td>View and interact with artifacts (read-only)</td><td>Business users, stakeholders</td></tr>
-        </tbody>
-      </table>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 16px;">
+      <div class="card">
+        <h4>🔐 Identity &amp; Access</h4>
+        <p>Entra ID, Conditional Access, MFA, service principals, workspace identity</p>
+      </div>
+      <div class="card">
+        <h4>🛡️ Data Security</h4>
+        <p>RLS, CLS, OLS, Dynamic Data Masking, OneLake folder-level RBAC</p>
+      </div>
+      <div class="card">
+        <h4>🏷️ Information Protection</h4>
+        <p>Sensitivity labels, DLP policies, Copilot AI data boundaries</p>
+      </div>
+      <div class="card">
+        <h4>📊 Monitoring</h4>
+        <p>Audit logs, Defender for Cloud Apps, Sentinel integration</p>
+      </div>
     </div>
 
-    <h3>Data-Level Security</h3>
-
-    <h4>Row-Level Security (RLS)</h4>
-    <p>RLS restricts data access at the row level based on user identity. Configure RLS in Power BI semantic models or Warehouse T-SQL:</p>
-    <div class="code-block">
-      <div class="code-header"><span>T-SQL — Row-Level Security in Warehouse</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
-      <pre>-- Create a security predicate function
-CREATE FUNCTION dbo.fn_security_predicate(@Region AS nvarchar(50))
-RETURNS TABLE
-WITH SCHEMABINDING
-AS
-RETURN SELECT 1 AS result
-WHERE @Region = USER_NAME()
-   OR USER_NAME() = 'admin@contoso.com';
-
--- Apply security policy to a table
-CREATE SECURITY POLICY RegionFilter
-ADD FILTER PREDICATE dbo.fn_security_predicate(Region)
-ON dbo.SalesData
-WITH (STATE = ON);</pre>
-    </div>
-
-    <h4>Column-Level Security (CLS)</h4>
-    <p>CLS restricts access to specific columns. Use <code>GRANT</code> and <code>DENY</code> statements on individual columns in Fabric Warehouse:</p>
-    <div class="code-block">
-      <div class="code-header"><span>T-SQL — Column-Level Security</span><button class="code-copy-btn" aria-label="Copy code to clipboard">Copy</button></div>
-      <pre>-- Deny access to salary column for a specific role
-DENY SELECT ON dbo.Employees(Salary) TO [LimitedAccess];
-
--- Grant access to only specific columns
-GRANT SELECT ON dbo.Employees(EmployeeId, Name, Department) TO [LimitedAccess];</pre>
-    </div>
-
-    <h4>OneLake Data Access Roles</h4>
-    <p>OneLake data access roles provide <strong>fine-grained access control at the folder level</strong> within a lakehouse. You can restrict users to specific folders or tables without granting access to the entire lakehouse.</p>
-
-    <h3>Network Security</h3>
-    <ul>
-      <li><strong>Private Endpoints:</strong> Connect to Fabric from your private network over Azure Private Link</li>
-      <li><strong>Managed Virtual Networks:</strong> Fabric Spark can run within a managed VNet, ensuring outbound traffic is controlled</li>
-      <li><strong>Trusted workspace access:</strong> Allow specific workspaces to access firewalled storage accounts</li>
-      <li><strong>Conditional Access:</strong> Use Entra ID conditional access policies to control how and from where users access Fabric</li>
-    </ul>
-
-    <div class="info-box danger">
-      <div class="info-box-title">🔒 Security Checklist</div>
-      <p><strong>□</strong> Enable Entra ID Conditional Access &nbsp;|&nbsp; <strong>□</strong> Implement RLS on all customer-facing reports &nbsp;|&nbsp; <strong>□</strong> Use service principals (not user accounts) for automation &nbsp;|&nbsp; <strong>□</strong> Enable audit logs &nbsp;|&nbsp; <strong>□</strong> Apply sensitivity labels &nbsp;|&nbsp; <strong>□</strong> Review workspace access quarterly</p>
+    <div class="info-box" style="margin-top: 20px; background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card)); border-left: 4px solid var(--accent-blue);">
+      <div class="info-box-title">🔒 Comprehensive Security Guide</div>
+      <p>Explore the full layered security model with interactive diagrams, code examples, decision matrices, and a hardening checklist → <strong><a href="security.html" style="color:var(--accent-blue);font-weight:600;">Security Deep Dive →</a></strong></p>
     </div>
 
     <div class="section-links">
       <h4>📚 Learn More</h4>
       <a href="https://learn.microsoft.com/fabric/security/security-overview" target="_blank">Security Overview ↗</a>
-      <a href="https://learn.microsoft.com/fabric/fundamentals/roles-workspaces" target="_blank">Workspace Roles ↗</a>
-      <a href="https://learn.microsoft.com/fabric/data-warehouse/row-level-security" target="_blank">Row-Level Security ↗</a>
-      <a href="https://learn.microsoft.com/fabric/security/security-managed-vnets-fabric-overview" target="_blank">Managed Virtual Networks ↗</a>
+      <a href="security.html">Full Security Guide →</a>
     </div>
 
   </section>

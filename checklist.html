@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://fabric.diazlabs.xyz/checklist">
   <title>Getting Started — Microsoft Fabric Guide</title>
   <meta name="description" content="Interactive checklist to track your Microsoft Fabric adoption progress.">
   <meta property="og:title" content="Getting Started — Microsoft Fabric Guide">
@@ -10,7 +11,10 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://fabric.diazlabs.xyz/checklist">
   <meta property="og:site_name" content="Microsoft Fabric Guide">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://fabric.diazlabs.xyz/img/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Getting Started — Microsoft Fabric Guide">
   <meta name="twitter:description" content="Interactive checklist to track your Microsoft Fabric adoption progress.">
   <link rel="stylesheet" href="css/styles.css">
@@ -163,6 +167,11 @@
         <label class="checklist-label" for="chk-endorse">Endorse production artifacts (Certify / Promote)
           <small>Signal trust and quality for your Gold-layer datasets and reports</small></label>
       </li>
+      <li class="checklist-item">
+        <input type="checkbox" id="chk-ai-prep">
+        <label class="checklist-label" for="chk-ai-prep">Prepare semantic models for AI (Copilot & Data Agents)
+          <small>Set AI data schema, add AI instructions, create verified answers — <a href="best-practices.html#data-for-ai">see guide</a></small></label>
+      </li>
     </ul>
 
     <h3>📚 Additional Resources</h3>
@@ -181,7 +190,8 @@
       <a href="https://learn.microsoft.com/fabric/get-started/fabric-trial" target="_blank">Start a Fabric Trial ↗</a>
       <h4>📎 See Also</h4>
       <a href="architecture.html">Architecture — Core Concepts →</a>
-      <a href="governance.html">Governance & Security →</a>
+      <a href="governance.html">Governance →</a>
+      <a href="security.html">Security →</a>
       <a href="operations.html">Operations — CI/CD & Deployment →</a>
     </div>
   </section>
