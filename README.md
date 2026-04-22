@@ -10,7 +10,8 @@ A comprehensive, interactive documentation site covering architecture, governanc
 |------|-------------|
 | **Home** | Guide overview, role-based journeys, architecture wizard, readiness quiz |
 | **Architecture** | Core architecture, OneLake, medallion pattern, real-time intelligence |
-| **Governance & Security** | Purview integration, endorsement, RLS/CLS, workspace roles |
+| **Governance** | Purview integration, endorsement, domains, workspace roles |
+| **Security** | Defense-in-depth layers: identity, workspace, item, data, OneLake, info protection, network, monitoring |
 | **Networking** | Zero-trust, private links, managed VNets, VNet gateways, trusted access |
 | **Best Practices** | Lakehouse vs. warehouse, Spark optimization, Power BI Direct Lake |
 | **Operations** | CI/CD, capacity planning, cost optimization, migration strategies, sizing |
@@ -41,7 +42,8 @@ A comprehensive, interactive documentation site covering architecture, governanc
 ```
 ├── index.html              # Home page
 ├── architecture.html       # Architecture & patterns
-├── governance.html         # Governance & security
+├── governance.html         # Governance
+├── security.html           # Security (defense-in-depth)
 ├── networking.html         # Network security
 ├── best-practices.html     # Engineering best practices
 ├── operations.html         # Operations & costs

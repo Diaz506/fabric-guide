@@ -106,6 +106,7 @@ const pageSections = {
     { id: 'scenarios', title: 'Customer Scenario Templates' }
   ],
   'whats-new':      [
+    { id: 'guide-updates', title: 'Guide Updates' },
     { id: 'fabcon-2026', title: 'FabCon 2026 News' },
     { id: 'whats-new', title: 'What\'s New' }
   ],
