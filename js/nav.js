@@ -3,7 +3,7 @@
    Injects header + sidebar into every page
    ============================================ */
 
-const LAST_DEPLOYED = '2026-04-21';
+const LAST_DEPLOYED = '2026-04-29';
 
 // Section index for each page (used for TOC + search)
 // Each page has a defaultCategory; sections can override with `category`

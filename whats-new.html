@@ -136,6 +136,8 @@
         <h4>Fabric Analytics &amp; Runtime 2.0</h4>
         <p>Runtime 2.0 (preview) brings Apache Spark 4.x, Delta Lake 4.x, and Scala 2.13 for large-scale data computation. Materialized lake views are now GA for simplified medallion architecture implementation.</p>
         <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li><strong>Materialized Lake Views (GA)</strong> — precomputed, auto-refreshed views over lakehouse data. Define a SELECT statement that spans Bronze/Silver/Gold and Fabric keeps the result materialized and fresh — replacing many manual notebook pipelines</li>
+          <li><strong>Graph in Fabric (GA)</strong> — native graph database with GQL (Graph Query Language) support for modeling entity relationships like supply chains, customer networks, and knowledge graphs at scale</li>
           <li>Agentic Copilot in notebooks — workspace-aware code generation</li>
           <li>Maps in Fabric — GA for geospatial real-time insights</li>
         </ul>
@@ -153,7 +155,7 @@
           </svg>
         </div>
         <h4>Fabric IQ &amp; Semantic Intelligence</h4>
-        <p>Fabric IQ ontologies accessible via MCP server (preview), enabling agents to discover and act on your semantic layer.</p>
+        <p>Fabric IQ ontologies accessible via MCP server (GA), enabling agents to discover and act on your semantic layer.</p>
         <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
           <li><strong>Planning in Fabric IQ</strong> — new enterprise planning capability to create plans, budgets, forecasts, and scenario models directly on semantic models. Combines historical, real-time, and forward-looking data in a single source.</li>
           <li>Direct Lake on OneLake — GA (import-class performance, no data movement)</li>
@@ -180,6 +182,42 @@
       </div>
 
       <div class="card">
+        <div class="card-icon" style="color: var(--accent-green);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="8" width="28" height="20" rx="3"/>
+            <line x1="4" y1="14" x2="32" y2="14"/>
+            <polyline points="12 20 16 26 24 18"/>
+          </svg>
+        </div>
+        <h4>Power BI Translytical Task Flows</h4>
+        <p>Now GA — users can trigger operational workflows, resolve data issues, and take action directly from Power BI reports. Elevates Power BI from analysis-only to an action-oriented platform.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>Embed task flows in dashboards — click a KPI to kick off a business process</li>
+          <li>Connects to Power Automate, Dataverse, and custom APIs</li>
+          <li>Audit trail for all actions taken from reports</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="color: var(--accent-orange);">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="24" height="28" rx="3"/>
+            <line x1="12" y1="12" x2="24" y2="12"/>
+            <line x1="12" y1="18" x2="24" y2="18"/>
+            <line x1="12" y1="24" x2="18" y2="24"/>
+            <path d="M22 22l4 4m0-4l-4 4"/>
+          </svg>
+        </div>
+        <h4>Fabric Planner (GA)</h4>
+        <p>Enterprise planning and budgeting built directly into Fabric. Create plans, budgets, forecasts, and scenario models on top of your semantic models — combining historical, real-time, and forward-looking data in one governed environment.</p>
+        <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li>No-code/low-code "what-if" scenario analysis with ML-powered forecasting</li>
+          <li>Replaces spreadsheet-based planning with governed, auditable workflows</li>
+          <li>Integrated into Fabric IQ semantic layer for business-context-aware planning</li>
+        </ul>
+      </div>
+
+      <div class="card">
         <div class="card-icon" style="color: var(--accent-blue);">
           <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="8 28 8 8 28 8"/>
@@ -192,10 +230,13 @@
         <h4>Developer Experience</h4>
         <p>Fabric local MCP is now GA — connecting AI coding assistants like GitHub Copilot directly to Fabric. Fabric remote MCP (preview) enables cloud-hosted agent execution with authenticated actions.</p>
         <ul style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          <li><strong>Selective Branching (preview)</strong> — branch only specific items instead of full workspaces, reducing clutter and improving dev velocity</li>
+          <li><strong>Variable Library (preview)</strong> — centralized configuration management for deployment pipelines, replacing hard-coded environment references across Dev/Test/Prod</li>
           <li>Git selective branching for feature-scoped workflows</li>
           <li>Agent Skills for Fabric — open-source GitHub Copilot terminal plugins</li>
           <li>Fabric Jumpstart — reference architectures &amp; one-click sample deployments</li>
           <li>Fabric Extensibility Toolkit (FET) — GA with CI/CD support</li>
+          <li>Fabric CLI v1.5 — one-command workspace deployments with AI and Power BI integration</li>
         </ul>
       </div>
 

@@ -119,6 +119,233 @@
       </table>
     </div>
 
+    <!-- Detailed Deployment Options -->
+    <h3>Option 1: Git-Based Deployments (Gitflow)</h3>
+    <p>All deployments originate from the Git repository. Each stage in the release pipeline has a <strong>dedicated primary branch</strong> (e.g., <code>dev</code>, <code>test</code>, <code>prod</code>) that feeds the appropriate workspace in Fabric. Promotion happens via Pull Requests between branches.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Git-Based Deployment Flow</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">PR → Dev Branch</div>
+          </div>
+          <div class="stage-desc">Merge feature branch into dev</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">⚙️</div>
+            <div class="stage-name">Build + Release</div>
+          </div>
+          <div class="stage-desc">Sync to Dev workspace via Git APIs</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">PR → Test Branch</div>
+          </div>
+          <div class="stage-desc">Cherry-pick / release branch to test</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">PR → Prod Branch</div>
+          </div>
+          <div class="stage-desc">Final promotion to production</div>
+        </div>
+      </div>
+    </div>
+
+    <h4>When to Use</h4>
+    <ul>
+      <li>Git is your <strong>single source of truth</strong> and the origin of all deployments</li>
+      <li>Your team follows <strong>Gitflow</strong> as the branching strategy (multiple primary branches)</li>
+      <li>No build environments needed — files upload directly from the repo into each workspace</li>
+      <li>Post-deployment configuration is handled via Fabric REST APIs (e.g., setting connections, triggering data ingestion)</li>
+    </ul>
+
+    <div class="info-box tip">
+      <div class="info-box-title">💡 Key Detail</div>
+      <p>Each stage triggers a <strong>Build pipeline</strong> (for unit tests) and a <strong>Release pipeline</strong> (to sync content using <a href="https://learn.microsoft.com/rest/api/fabric/core/git/update-from-git" target="_blank" rel="noopener">Fabric Git APIs</a>). Release branches or cherry-picks create PRs between stages for controlled promotion.</p>
+    </div>
+
+    <h3>Option 2: Git-Based with Build Environments (Trunk-Based)</h3>
+    <p>All deployments originate from a <strong>single main branch</strong>. Each stage has a dedicated build and release pipeline that uses a <strong>build environment</strong> to transform configuration (connection IDs, lakehouse IDs, parameters) before deploying to each workspace.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Trunk-Based with Build Environments</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">PR → Main</div>
+          </div>
+          <div class="stage-desc">Merge into single main branch</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🏗️</div>
+            <div class="stage-name">Build Env (Dev)</div>
+          </div>
+          <div class="stage-desc">Unit tests + config transform for Dev</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🏗️</div>
+            <div class="stage-name">Build Env (Test)</div>
+          </div>
+          <div class="stage-desc">Tests + config transform for Test</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🏗️</div>
+            <div class="stage-name">Build Env (Prod)</div>
+          </div>
+          <div class="stage-desc">Config transform + deploy to Prod</div>
+        </div>
+      </div>
+    </div>
+
+    <h4>When to Use</h4>
+    <ul>
+      <li>Git is your single source of truth with a <strong>trunk-based</strong> branching strategy</li>
+      <li>You need a <strong>build environment</strong> to alter workspace-specific attributes (connectionId, lakehouseId) before deployment</li>
+      <li>You want <strong>deterministic, programmatic deployments</strong> with custom scripts</li>
+      <li>Ideal for teams using <strong><code>fabric-cicd</code></strong> (Python SDK) or the <strong>Bulk Import Item Definitions API</strong></li>
+    </ul>
+
+    <div class="info-box">
+      <div class="info-box-title">🔧 Implementation Tools</div>
+      <p><strong><a href="https://github.com/microsoft/fabric-cicd" target="_blank" rel="noopener">fabric-cicd</a></strong> — Python library for code-first CI/CD automations (see detailed section below).<br>
+      <strong><a href="https://learn.microsoft.com/rest/api/fabric/core/items/bulk-import-item-definitions" target="_blank" rel="noopener">Bulk Import Item Definitions API</a></strong> — Creates new items and updates existing ones with built-in dependency handling for correct deployment order.</p>
+    </div>
+
+    <h3>Option 3: Deploy via Fabric Deployment Pipelines</h3>
+    <p>Git is connected <strong>only to the Dev workspace</strong>. Promotion from Dev → Test → Prod happens through <strong>Fabric's native deployment pipelines</strong>, which can be orchestrated via APIs from Azure DevOps or GitHub Actions.</p>
+
+    <div class="diagram-container">
+      <div class="diagram-title">Deployment Pipelines Flow</div>
+      <div class="pipeline-flow">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔀</div>
+            <div class="stage-name">PR → Main</div>
+          </div>
+          <div class="stage-desc">Merge to main branch</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">💻</div>
+            <div class="stage-name">Dev Workspace</div>
+          </div>
+          <div class="stage-desc">Git sync via APIs</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔄</div>
+            <div class="stage-name">Fabric Pipeline</div>
+          </div>
+          <div class="stage-desc">Deploy Dev → Test (with tests)</div>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🚀</div>
+            <div class="stage-name">Fabric Pipeline</div>
+          </div>
+          <div class="stage-desc">Deploy Test → Prod (with approval)</div>
+        </div>
+      </div>
+    </div>
+
+    <h4>When to Use</h4>
+    <ul>
+      <li>You use source control <strong>for development only</strong> and prefer deploying directly between stages</li>
+      <li><strong>Deployment rules</strong> and <strong>autobinding</strong> are sufficient to manage configuration differences between stages</li>
+      <li>You want to leverage Fabric's built-in features: <strong>change comparison</strong>, <strong>deployment history</strong>, and <strong>selective deployment</strong></li>
+      <li>Simpler setup for teams that don't need custom build environments</li>
+    </ul>
+
+    <div class="info-box tip">
+      <div class="info-box-title">⚡ API Orchestration</div>
+      <p>Even with this approach, you can automate the full flow using <a href="https://learn.microsoft.com/rest/api/fabric/core/deployment-pipelines" target="_blank" rel="noopener">Deployment Pipelines APIs</a> from your Azure DevOps or GitHub Actions release pipeline — adding automated tests, approval gates, and audit trails.</p>
+    </div>
+
+    <h4>ISV / Multi-Tenant Pattern</h4>
+    <p>For <strong>Independent Software Vendors (ISVs)</strong> building SaaS applications on Fabric, a variant of Option 2 exists where Dev and Test are centralized, but the Prod stage fans out to <strong>per-customer workspaces</strong> (potentially hundreds or thousands). Each customer gets its own release with unique parameters and data connections. All customer releases can run in parallel.</p>
+    <p>📖 <a href="https://learn.microsoft.com/fabric/cicd/manage-deployment" target="_blank" rel="noopener">See the full ISV deployment pattern in Microsoft's documentation ↗</a></p>
+
+    <!-- Choosing the Right Pattern -->
+    <h3>Choosing the Right Pattern</h3>
+    <p>Git integration and Deployment Pipelines are <strong>complementary tools</strong>, not competing ones. The right combination depends on your team's maturity, branching strategy, and governance requirements.</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Consideration</th>
+            <th>Option 1 (Git-Based)</th>
+            <th>Option 2 (Build Envs)</th>
+            <th>Option 3 (Pipelines)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Source of truth</strong></td>
+            <td>Git (all stages)</td>
+            <td>Git (single branch)</td>
+            <td>Git (dev only) + Fabric</td>
+          </tr>
+          <tr>
+            <td><strong>Branching strategy</strong></td>
+            <td>Gitflow (multi-branch)</td>
+            <td>Trunk-based</td>
+            <td>Any (single branch typical)</td>
+          </tr>
+          <tr>
+            <td><strong>Config management</strong></td>
+            <td>Post-deploy APIs</td>
+            <td>Build-time transforms</td>
+            <td>Deployment rules / autobinding</td>
+          </tr>
+          <tr>
+            <td><strong>Tooling complexity</strong></td>
+            <td>Medium</td>
+            <td>High (custom scripts)</td>
+            <td>Low–Medium</td>
+          </tr>
+          <tr>
+            <td><strong>Best for</strong></td>
+            <td>Teams with Git maturity</td>
+            <td>Enterprise / programmatic</td>
+            <td>Teams wanting simplicity</td>
+          </tr>
+          <tr>
+            <td><strong>Fabric UI visibility</strong></td>
+            <td>Limited (Git-only)</td>
+            <td>Limited (Git-only)</td>
+            <td>Full (diff view, history)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box tip">
+      <div class="info-box-title">✅ Recommendation</div>
+      <p><strong>Starting out?</strong> Use Option 3 — it's the simplest path to a structured Dev → Test → Prod flow.<br>
+      <strong>Scaling up?</strong> Move to Option 2 with <code>fabric-cicd</code> for deterministic, fully automated deployments.<br>
+      <strong>Gitflow team?</strong> Option 1 aligns naturally with your existing branching workflow.</p>
+    </div>
+
     <h3>Python CI/CD with <code>fabric-cicd</code></h3>
     <p>The <strong><a href="https://github.com/microsoft/fabric-cicd" class="ext-link" target="_blank" rel="noopener">fabric-cicd</a></strong> library is Microsoft's open-source Python SDK for automating Fabric workspace deployments. It provides deterministic, code-first deployments that integrate seamlessly with GitHub Actions and Azure DevOps pipelines.</p>
 
@@ -229,6 +456,8 @@ jobs:
       <a href="https://learn.microsoft.com/fabric/cicd/tutorial-fabric-cicd-local" target="_blank">fabric-cicd Tutorial ↗</a>
       <a href="https://github.com/microsoft/fabric-cicd" target="_blank">fabric-cicd on GitHub ↗</a>
       <a href="https://learn.microsoft.com/rest/api/fabric/articles/fabric-ci-cd" target="_blank">Fabric CI/CD REST APIs ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/manage-deployment" target="_blank">CI/CD Deployment Options ↗</a>
+      <a href="https://learn.microsoft.com/fabric/cicd/best-practices-cicd" target="_blank">Lifecycle Management Best Practices ↗</a>
     </div>
 
   </section>
