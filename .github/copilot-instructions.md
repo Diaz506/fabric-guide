@@ -14,9 +14,16 @@ There is no build, test, or lint step.
 
 ## Deployment
 
-Pushes to `main` auto-deploy via GitHub Actions (`Azure/static-web-apps-deploy`). The workflow sets `skip_app_build: true` because there is no build step. Manual deploy uses `StaticSitesClient.exe` from a staging folder (not `swa` CLI, which is broken with Node v24+).
+GitHub Actions is **not enabled** — all deployments are manual via `StaticSitesClient.exe`. The `swa` CLI is broken with Node v24+.
 
-**OneDrive caveat:** The working copy lives in OneDrive, which corrupts `.git` folders. Never deploy directly from OneDrive — copy to a staging folder first.
+**Deploy steps:**
+1. Copy site files to a staging folder (never deploy directly from OneDrive)
+2. Get the deployment token: `az staticwebapp secrets list --name "fabric-guide" --query "properties.apiKey" -o tsv`
+3. Run: `StaticSitesClient.exe upload --app <staging-folder> --apiToken <token> --skipAppBuild true`
+
+The `StaticSitesClient.exe` binary is at `~/.swa/deploy/08e29138cd3dcda4ffda6d587aa580028110c1c7/StaticSitesClient.exe`.
+
+**OneDrive caveat:** The working copy lives in OneDrive, which corrupts `.git` folders. For git operations, clone fresh to a temp folder, copy files in, commit/push, then clean up.
 
 ## Architecture
 
